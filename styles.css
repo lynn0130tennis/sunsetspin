@@ -261,10 +261,33 @@ body {
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
 }
 
 .form-container iframe {
     border-radius: 5px;
+    display: block;
+}
+
+/* Hide Google Form header with account info */
+.form-container iframe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    z-index: 10;
+}
+
+/* Alternative method - hide via iframe content */
+@supports (clip-path: polygon(0 60px, 100% 60px, 100% 100%, 0 100%)) {
+    .form-container iframe {
+        clip-path: inset(60px 0 0 0);
+        margin-top: -60px;
+        height: calc(1200px + 60px);
+    }
 }
 
 .registration-info {
@@ -470,6 +493,12 @@ body {
     .registration-info {
         padding: 25px;
     }
+
+    @supports (clip-path: polygon(0 60px, 100% 60px, 100% 100%, 0 100%)) {
+        .form-container iframe {
+            height: calc(1000px + 60px);
+        }
+    }
 }
 
 @media (max-width: 480px) {
@@ -508,5 +537,11 @@ body {
 
     .tournament-card h3 {
         font-size: 18px;
+    }
+
+    @supports (clip-path: polygon(0 60px, 100% 60px, 100% 100%, 0 100%)) {
+        .form-container iframe {
+            height: calc(900px + 60px);
+        }
     }
 }
