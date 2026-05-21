@@ -32,9 +32,49 @@
                 <h2>Welcome to Sunset Spin Invitational</h2>
                 <p>Where Competition Meets Golden Hour</p>
                 <a href="#register" class="cta-button">Register Today</a>
+               
             </div>
+
+        
         </section>
 
+    .hero {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+
+    /* 🔥 Your background image */
+    background-image: url("sunset.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    position: relative;
+}
+
+/* 🔥 Dark overlay for readability */
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* 🔥 Keeps text above overlay */
+.hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+
+        
         <!-- About Section -->
         <section id="about" class="about">
             <div class="container">
