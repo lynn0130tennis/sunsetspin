@@ -68,7 +68,20 @@ body {
 /* Hero Section */
 .hero {
       background-image: url("sunset.jpg");
-       color: white;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    color: white;
+    text-align: center;
+
+    
+       color: black;
     padding: 120px 20px;
     text-align: center; 
 }
