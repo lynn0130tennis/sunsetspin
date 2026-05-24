@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sunset Spin Invitational - Tennis Tournament Registration</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
     <header class="header">
@@ -15,14 +16,27 @@
             </div>
             <nav class="nav">
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#tournaments">Tournaments</a></li>
-                    <li><a href="#register">Register</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#tournaments">Tournaments</a></li>
+        <li><a href="#register">Register</a></li>
+        <li><a href="#contact">Contact</a></li>
+
+        <li><button id="signin-btn">Sign In</button></li>
+        <li><button id="signup-btn">Sign Up</button></li>
+        <li><button id="logout-btn" style="display:none;">Logout</button></li>
+    </ul>
             </nav>
         </div>
+        
+        <div id="user-status" style="
+    text-align:center;
+    padding:10px;
+    background:#f5f5f5;
+    font-weight:bold;
+">
+    Not signed in
+</div>
     </header>
 
     <main>
@@ -126,7 +140,16 @@
                 <p class="registration-intro">Register for Sunset Spin Invitational tournaments using the form below. Complete your registration and we'll send you tournament details, schedule, and confirmation via email.</p>
                 
                 <!-- Google Form Embed -->
-                <div class="form-container">
+<div id="login-message" style="
+    text-align:center;
+    padding:20px;
+    font-size:18px;
+">
+    Please sign in to register for tournaments.
+</div>
+
+                
+                <div class="form-container" id="registration-form-container" style="display:none;">
                     <iframe 
                         src="https://docs.google.com/forms/d/e/1FAIpQLSec6HLShNKZdIfCp7Co6uLYHpQQmJYLUDSHZJ-BKccbPKuolA/viewform?embedded=true&hl=en_US" 
                         width="100%" 
