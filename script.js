@@ -1,7 +1,7 @@
 console.log("SCRIPT LOADED1")
 alert("script loaded2");
 
-const SUPABASE_URL = "https://wcaoltfalhstnvjhcxbi.supabase.co";
+const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjYW9sdGZhbGhzdG52amhjeGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NjQzNTcsImV4cCI6MjA5NTE0MDM1N30.qqoegdtiXp5Xnfoa-TASwJT2S_InYfkJyfaAO9hviys";
 
 
