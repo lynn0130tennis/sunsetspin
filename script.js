@@ -53,45 +53,111 @@ async function updateUI() {
     }
 }
 
-signupBtn.addEventListener("click", async () => {
+const authModal = document.getElementById("auth-modal");
 
-    const email = prompt("Enter email");
-    const password = prompt("Enter password");
+const authTitle = document.getElementById("auth-title");
 
-    const { error } = await client.auth.signUp({
-        email,
-        password
-    });
+const authEmail = document.getElementById("auth-email");
 
-    if (error) {
-        alert(error.message);
+const authPassword =
+    document.getElementById("auth-password");
+
+const authSubmitBtn =
+    document.getElementById("auth-submit-btn");
+
+const authMessage =
+    document.getElementById("auth-message");
+
+const closeModal =
+    document.getElementById("close-modal");
+
+let authMode = "signin";
+
+function openModal(mode) {
+
+    authMode = mode;
+
+    authModal.style.display = "flex";
+
+    authMessage.innerText = "";
+
+    authEmail.value = "";
+    authPassword.value = "";
+
+    if (mode === "signup") {
+        authTitle.innerText = "Create Account";
     } else {
-        alert(
-            "Signup successful! Check your email for confirmation."
-        );
+        authTitle.innerText = "Sign In";
     }
+}
 
-    updateUI();
+function closeAuthModal() {
+    authModal.style.display = "none";
+}
+
+signupBtn.addEventListener("click", () => {
+    openModal("signup");
 });
 
-signinBtn.addEventListener("click", async () => {
+signinBtn.addEventListener("click", () => {
+    openModal("signin");
+});
 
-    const email = prompt("Enter email");
-    const password = prompt("Enter password");
+closeModal.addEventListener("click", () => {
+    closeAuthModal();
+});
 
-    const { error } =
-        await client.auth.signInWithPassword({
+window.addEventListener("click", (e) => {
+    if (e.target === authModal) {
+        closeAuthModal();
+    }
+});
+
+authSubmitBtn.addEventListener("click", async () => {
+
+    const email = authEmail.value;
+
+    const password = authPassword.value;
+
+    let result;
+
+    if (authMode === "signup") {
+
+        result = await client.auth.signUp({
             email,
             password
         });
 
-    if (error) {
-        alert(error.message);
     } else {
-        alert("Signed in successfully!");
+
+        result =
+            await client.auth.signInWithPassword({
+                email,
+                password
+            });
     }
 
-    updateUI();
+    if (result.error) {
+
+        authMessage.innerText =
+            result.error.message;
+
+    } else {
+
+        if (authMode === "signup") {
+
+            authMessage.style.color = "green";
+
+            authMessage.innerText =
+                "Account created! Check your email.";
+
+        } else {
+
+            closeAuthModal();
+
+            updateUI();
+        }
+    }
 });
 
 logoutBtn.addEventListener("click", async () => {
