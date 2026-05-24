@@ -1,3 +1,4 @@
+console.log("SCRIPT LOADED")
 alert("script loaded");
 
 const SUPABASE_URL = "https://wcaoltfalhstnvjhcxbi.supabase.co/rest/v1/";
