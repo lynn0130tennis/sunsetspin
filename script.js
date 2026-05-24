@@ -1,5 +1,5 @@
-console.log("SCRIPT LOADED")
-alert("script loaded");
+console.log("SCRIPT LOADED1")
+alert("script loaded2");
 
 const SUPABASE_URL = "https://wcaoltfalhstnvjhcxbi.supabase.co/rest/v1/";
 const SUPABASE_KEY = "sb_publishable_bFN87oygYFfa9i1fKREwug_7I96hoPb";
