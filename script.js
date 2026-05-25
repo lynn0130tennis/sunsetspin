@@ -209,42 +209,38 @@ if (authMode === "signup") {
 
         return;
     }
+// SEND WELCOME EMAIL
+try {
 
-    // SEND WELCOME EMAIL
-    try {
+    const response = await fetch(
+        "https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email",
+        {
+            method: "POST",
 
-        const response = await fetch(
-            "https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email",
-            {
-                method: "POST",
+            headers: {
+                "Content-Type": "application/json",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+                // IMPORTANT
+                "Authorization":
+                    `Bearer ${SUPABASE_KEY}`
+            },
 
-                body: JSON.stringify({
-                    email,
-                    username
-                })
-            }
-        );
+            body: JSON.stringify({
+                email: email,
+                username: username
+            })
+        }
+    );
 
-        const emailResult =
-            await response.json();
+    const result = await response.json();
 
-        console.log(
-            "EMAIL RESULT:",
-            emailResult
-        );
+    console.log("EMAIL RESULT:", result);
 
-    } catch (emailError) {
+} catch (err) {
 
-        console.log(
-            "EMAIL ERROR:",
-            emailError
-        );
-    }
+    console.log("EMAIL ERROR:", err);
+
+}
 
     // SUCCESS
     authMessage.style.color = "green";
