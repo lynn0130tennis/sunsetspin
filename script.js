@@ -185,7 +185,7 @@ if (insertError) {
 authMessage.style.color = "green";
 authMessage.innerText = "Account created!";
 
-await fetch("https://YOUR_PROJECT.functions.supabase.co/send-welcome-email", {
+await fetch("https://https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
