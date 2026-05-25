@@ -6,7 +6,10 @@ const client = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
-
+const authUsername =
+    document.getElementById(
+        "auth-username"
+    );
 // --------------------
 // DOM ELEMENTS
 // --------------------
@@ -64,19 +67,22 @@ let authMode = "signin";
 
 function openModal(mode) {
 
-    authMode = mode;
-
-    authModal.style.display = "flex";
-
-    authMessage.innerText = "";
-
-    authEmail.value = "";
-    authPassword.value = "";
+    if (mode === "signup") {
 
     authTitle.innerText =
-        mode === "signup"
-            ? "Create Account"
-            : "Sign In";
+        "Create Account";
+
+    authUsername.style.display =
+        "block";
+
+} else {
+
+    authTitle.innerText =
+        "Sign In";
+
+    authUsername.style.display =
+        "none";
+}
 }
 
 function closeAuthModal() {
@@ -174,7 +180,7 @@ authSubmitBtn.addEventListener(
             .from("Registration")
             .insert([
                 {
-                    User_id: user.id,
+                    User_id: user.username
                     Email: user.email || email
                 }
             ]);
