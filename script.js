@@ -396,8 +396,8 @@ async function updateUI() {
             session.user.user_metadata?.username ||
             session.user.email;
 
-        userStatus.innerText =
-            `Signed in as ${username}`;
+        userStatus.innerText = username;
+          
 
         signinBtn.style.display = "none";
         signupBtn.style.display = "none";
