@@ -644,3 +644,30 @@ body {
 
     cursor: pointer;
 }
+/* Make auth buttons match site style */
+#signin-btn,
+#signup-btn,
+#logout-btn {
+    background: #1e3a8a;   /* deep blue like tennis theme */
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect (same feel as CTA buttons) */
+#signin-btn:hover,
+#signup-btn:hover,
+#logout-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+}
+
+/* Optional: spacing so nav looks cleaner */
+.nav ul li button {
+    margin-left: 8px;
+}
