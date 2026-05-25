@@ -8,93 +8,32 @@ console.log("SCRIPT LOADED");
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
-
-console.log("SCRIPT LOADED");
-
-
-const client =
-    supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --------------------
 // DOM ELEMENTS
 // --------------------
 
-const signinBtn =
-    document.getElementById("signin-btn");
+const signinBtn = document.getElementById("signin-btn");
+const signupBtn = document.getElementById("signup-btn");
+const logoutBtn = document.getElementById("logout-btn");
 
-const signupBtn =
-    document.getElementById("signup-btn");
+const userStatus = document.getElementById("user-status");
 
-const logoutBtn =
-    document.getElementById("logout-btn");
+const registrationContainer = document.getElementById("registration-form-container");
+const loginMessage = document.getElementById("login-message");
 
-const userStatus =
-    document.getElementById("user-status");
+const authModal = document.getElementById("auth-modal");
+const authTitle = document.getElementById("auth-title");
 
-const registrationContainer =
-    document.getElementById("registration-form-container");
+const authUsername = document.getElementById("auth-username");
+const authEmail = document.getElementById("auth-email");
+const authPassword = document.getElementById("auth-password");
+const authPhone = document.getElementById("auth-phone");
 
-const loginMessage =
-    document.getElementById("login-message");
-
-const authModal =
-    document.getElementById("auth-modal");
-
-const authTitle =
-    document.getElementById("auth-title");
-
-const authUsername =
-    document.getElementById("auth-username");
-
-const authEmail =
-    document.getElementById("auth-email");
-
-const authPassword =
-    document.getElementById("auth-password");
-
-const authPhone =
-    document.getElementById("auth-phone");
-// 👇 ADD THIS RIGHT HERE
-if (authPhone) {
-
-    authPhone.addEventListener("input", (e) => {
-
-        let value = e.target.value;
-
-        // remove non-digits
-        value = value.replace(/\D/g, "");
-
-        // limit to 10 digits
-        value = value.substring(0, 10);
-
-        // format XXX-XXX-XXXX
-        if (value.length > 6) {
-            value = value.replace(
-                /(\d{3})(\d{3})(\d{0,4})/,
-                "$1-$2-$3"
-            );
-        } else if (value.length > 3) {
-            value = value.replace(
-                /(\d{3})(\d{0,3})/,
-                "$1-$2"
-            );
-        }
-
-        e.target.value = value;
-    });
-}
-
-const authSubmitBtn =
-    document.getElementById("auth-submit-btn");
-
-const authMessage =
-    document.getElementById("auth-message");
-
-const closeModal =
-    document.getElementById("close-modal");
+const authSubmitBtn = document.getElementById("auth-submit-btn");
+const authMessage = document.getElementById("auth-message");
+const closeModal = document.getElementById("close-modal");
 
 // --------------------
 // AUTH MODE
@@ -103,60 +42,50 @@ const closeModal =
 let authMode = "signin";
 
 // --------------------
+// PHONE FORMAT (XXX-XXX-XXXX)
+// --------------------
+
+if (authPhone) {
+    authPhone.addEventListener("input", (e) => {
+        let value = e.target.value.replace(/\D/g, "").substring(0, 10);
+
+        if (value.length > 6) {
+            value = value.replace(/(\d{3})(\d{3})(\d{0,4})/, "$1-$2-$3");
+        } else if (value.length > 3) {
+            value = value.replace(/(\d{3})(\d{0,3})/, "$1-$2");
+        }
+
+        e.target.value = value;
+    });
+}
+
+// --------------------
 // MODAL
 // --------------------
 
 function openModal(mode) {
-
     authMode = mode;
 
     authModal.style.display = "block";
-
     authMessage.innerText = "";
 
-    // reset values
-    if (authEmail) authEmail.value = "";
-    if (authPassword) authPassword.value = "";
-    if (authUsername) authUsername.value = "";
-    if (authPhone) authPhone.value = "";
-
-    // --------------------
-    // SIGN UP UI
-    // --------------------
+    authEmail.value = "";
+    authPassword.value = "";
+    authUsername.value = "";
+    authPhone.value = "";
 
     if (mode === "signup") {
+        authTitle.innerText = "Create Account";
 
-        authTitle.innerText =
-            "Create Account";
+        authUsername.style.display = "block";
+        authPhone.style.display = "block";
+        authEmail.style.display = "block";
+    } else {
+        authTitle.innerText = "Sign In";
 
-        if (authUsername)
-            authUsername.style.display = "block";
-
-        if (authPhone)
-            authPhone.style.display = "block";
-
-        if (authEmail)
-            authEmail.style.display = "block";
-
-    }
-
-    // --------------------
-    // SIGN IN UI
-    // --------------------
-
-    else {
-
-        authTitle.innerText =
-            "Sign In";
-
-        if (authUsername)
-            authUsername.style.display = "block";
-
-        if (authPhone)
-            authPhone.style.display = "none";
-
-        if (authEmail)
-            authEmail.style.display = "none";
+        authUsername.style.display = "block";
+        authPhone.style.display = "none";
+        authEmail.style.display = "none";
     }
 }
 
@@ -168,14 +97,8 @@ function closeAuthModal() {
 // BUTTON EVENTS
 // --------------------
 
-signupBtn.addEventListener("click", () =>
-    openModal("signup")
-);
-
-signinBtn.addEventListener("click", () =>
-    openModal("signin")
-);
-
+signupBtn.addEventListener("click", () => openModal("signup"));
+signinBtn.addEventListener("click", () => openModal("signin"));
 closeModal.addEventListener("click", closeAuthModal);
 
 window.addEventListener("click", (e) => {
@@ -187,129 +110,50 @@ window.addEventListener("click", (e) => {
 // --------------------
 
 authSubmitBtn.addEventListener("click", async (e) => {
-
     e.preventDefault();
 
-    const email =
-        authEmail.value.trim();
+    const username = authUsername.value.trim();
+    const email = authEmail.value.trim();
+    const password = authPassword.value.trim();
+    const phone = authPhone.value.trim();
 
-    const password =
-        authPassword.value.trim();
-
-    const username =
-        authUsername
-            ? authUsername.value.trim()
-            : "";
-
-    const phone =
-        authPhone
-            ? authPhone.value.trim()
-            : "";
+    authMessage.style.color = "red";
 
     // --------------------
-    // BASIC VALIDATION
-    // --------------------
-
-  if (authMode === "signup") {
-
-    if (!email || !password) {
-
-        authMessage.style.color = "red";
-
-        authMessage.innerText =
-            "Please enter email and password.";
-
-        return;
-    }
-}
-
-if (authMode === "signin") {
-
-    if (!username || !password) {
-
-        authMessage.style.color = "red";
-
-        authMessage.innerText =
-            "Please enter username and password.";
-
-        return;
-    }
-}
-
-    let result;
-
-    // ====================
     // SIGN UP
-    // ====================
+    // --------------------
 
     if (authMode === "signup") {
 
-        const phonePattern =
-            /^\d{3}-\d{3}-\d{4}$/;
-
-        if (!username) {
-            authMessage.style.color = "red";
-            authMessage.innerText =
-                "Please enter a username.";
+        if (!username || !email || !password || !phone) {
+            authMessage.innerText = "Please fill all fields.";
             return;
         }
 
-        if (!phone) {
-            authMessage.style.color = "red";
-            authMessage.innerText =
-                "Please enter a phone number.";
-            return;
-        }
-
-        if (!phonePattern.test(phone)) {
-            authMessage.style.color = "red";
-            authMessage.innerText =
-                "Enter a valid phone number (123-456-7890).";
-            return;
-        }
-
-        result = await client.auth.signUp({
+        const { data, error } = await client.auth.signUp({
             email,
             password,
             options: {
-                data: {
-                    username,
-                    phone
-                }
+                data: { username, phone }
             }
         });
 
-        console.log("SIGNUP RESULT:", result);
-
-        if (result.error) {
-            authMessage.style.color = "red";
-            authMessage.innerText = result.error.message;
+        if (error) {
+            authMessage.innerText = error.message;
             return;
         }
 
-        const user = result.data.user;
-
-        const insertResult =
-            await client
-                .from("Registration")
-                .insert([
-                    {
-                        username,
-                        email: user.email || email,
-                        phone,
-                        Created_At: new Date().toISOString()
-                    }
-                ]);
-
-        if (insertResult.error) {
-            authMessage.style.color = "red";
-            authMessage.innerText = insertResult.error.message;
-            return;
-        }
+        await client.from("Registration").insert([
+            {
+                username,
+                email,
+                phone,
+                created_at: new Date().toISOString()
+            }
+        ]);
 
         authMessage.style.color = "green";
-        authMessage.innerText =
-            "Account created successfully!";
+        authMessage.innerText = "Account created!";
 
         setTimeout(() => {
             closeAuthModal();
@@ -317,52 +161,41 @@ if (authMode === "signin") {
         }, 800);
     }
 
-    // ====================
-    // SIGN IN
-    // ====================
+    // --------------------
+    // SIGN IN (USERNAME → EMAIL LOOKUP)
+    // --------------------
 
     else {
 
-        if (!username) {
-            authMessage.style.color = "red";
-            authMessage.innerText =
-                "Please enter username.";
+        if (!username || !password) {
+            authMessage.innerText = "Enter username and password.";
             return;
         }
 
-        const { data, error } =
-            await client
-                .from("Registration")
-                .select("email")
-                .eq("username", username)
-                .single();
+        const { data, error } = await client
+            .from("Registration")
+            .select("email")
+            .eq("username", username)
+            .single();
 
         if (error || !data) {
-            authMessage.style.color = "red";
-            authMessage.innerText =
-                "Username not found.";
+            authMessage.innerText = "Username not found.";
             return;
         }
 
-        const emailFromUsername = data.email;
-
-        result =
+        const { error: loginError } =
             await client.auth.signInWithPassword({
-                email: emailFromUsername,
+                email: data.email,
                 password
             });
 
-        console.log("SIGNIN RESULT:", result);
-
-        if (result.error) {
-            authMessage.style.color = "red";
-            authMessage.innerText = result.error.message;
+        if (loginError) {
+            authMessage.innerText = loginError.message;
             return;
         }
 
         authMessage.style.color = "green";
-        authMessage.innerText =
-            "Signed in successfully!";
+        authMessage.innerText = "Signed in!";
 
         setTimeout(() => {
             closeAuthModal();
@@ -381,14 +214,13 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // --------------------
-// UI UPDATE
+// UI UPDATE (FIXED - NO "NOT SIGNED IN")
 // --------------------
 
 async function updateUI() {
 
-    const {
-        data: { session }
-    } = await client.auth.getSession();
+    const { data: { session } } =
+        await client.auth.getSession();
 
     if (session) {
 
@@ -396,8 +228,7 @@ async function updateUI() {
             session.user.user_metadata?.username ||
             session.user.email;
 
-        userStatus.innerText = username;
-          
+        userStatus.textContent = username;
 
         signinBtn.style.display = "none";
         signupBtn.style.display = "none";
@@ -408,7 +239,8 @@ async function updateUI() {
 
     } else {
 
-        userStatus.innerText = "";
+        // IMPORTANT: empty only
+        userStatus.textContent = "";
 
         signinBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
