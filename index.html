@@ -7,235 +7,95 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
+
 <body>
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <h1>🎾 Sunset Spin Invitational</h1>
-                <p class="tagline">Tennis Tournament & Events</p>
-            </div>
-            <nav class="nav">
-                <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#tournaments">Tournaments</a></li>
-        <li><a href="#register">Register</a></li>
-        <li><a href="#contact">Contact</a></li>
-<li id="user-status-container">
-    <span id="user-status"></span>
-</li>
 
-<li><a href="#" id="signin-btn">Sign In</a></li>
-<li><a href="#" id="signup-btn">Sign Up</a></li>
-<li><a href="#" id="logout-btn" style="display:none;">Logout</a></li>
-    </ul>
-            </nav>
+<header class="header">
+    <div class="container">
+
+        <div class="logo">
+            <h1>🎾 Sunset Spin Invitational</h1>
+            <p class="tagline">Tennis Tournament & Events</p>
         </div>
 
-    </header>
+        <nav class="nav">
+            <ul>
 
-    <main>
-        <!-- Hero Section -->
-        <section id="home" class="hero">
-            <div class="container">
-                <h2>Welcome to Sunset Spin Invitational</h2>
-                <p>Where Competition Meets Golden Hour</p>
-                <a href="#register" class="cta-button">Register Today</a>
-               
-            </div>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#tournaments">Tournaments</a></li>
+                <li><a href="#register">Register</a></li>
+                <li><a href="#contact">Contact</a></li>
 
-        
-        </section>
+                <!-- USER STATUS (ONLY ONE) -->
+                <li id="user-status-container">
+                    <span id="user-status"></span>
+                </li>
 
-   
-        
-        <!-- About Section -->
-        <section id="about" class="about">
-            <div class="container">
-                <h2>About Sunset Spin Invitational</h2>
-                <div class="about-content">
-                    <p>Sunset Spin Invitational is an organization dedicated to promoting excellence in competitive tennis. We host tournaments and events that bring together players of all skill levels to compete, network, and celebrate the sport we love.</p>
-                    <p>Our vision is to build a vibrant tennis community where every player feels connected, inspired, and motivated to grow — creating meaningful relationships and unforgettable experiences through the game of tennis.</p>
-                                                        
-      
-               <div class="stats" style="display:none;">
-                        <div class="stat">
-                            <h3>500+</h3>
-                            <p>Players Annually</p>
-                        </div>
-                        <div class="stat">
-                            <h3>50+</h3>
-                            <p>Events Hosted</p>
-                        </div>
-                        <div class="stat">
-                            <h3>15+</h3>
-                            <p>Years Running</p>
-                            </div>
-                        </div>
+                <li><a href="#" id="signin-btn">Sign In</a></li>
+                <li><a href="#" id="signup-btn">Sign Up</a></li>
+                <li><a href="#" id="logout-btn" style="display:none;">Logout</a></li>
 
-                     
-                   </div>
-                
-            </div>
-        </section>
-                  
-        <!-- Tournaments Section -->
-        <section id="tournaments" class="tournaments">
-            <div class="container">
-                <h2>Tournaments</h2>
-                <div class="tournaments-grid">
-                    <div class="tournament-card">
-                        <div class="tournament-badge">Summer</div>
-                        <h3>Summer Invitational Championship</h3>
-                        <p><strong>Dates:</strong> June 15-17, 2026</p>
-                        <p><strong>Divisions:</strong> Men's Doubles, Women's Doubles, Mixed Doubles</p>
-                        <p><strong>Levels:</strong> 3.0+</p>
-                        <p><strong>Location:</strong> TBD </p>
-                        <p><strong>Entry Fee:</strong> free </p>
-                        <p>Our flagship summer tournament featuring competitive play across multiple divisions with prizes, trophies, and recognition for top performers.</p>
-                    </div>
-                    <div class="tournament-card" >
-                        <div class="tournament-badge">Summer</div>
-                        <h3>Summer Open - Single</h3>
-                        <p><strong>Dates:</strong> June 30- Aug 31, 2026</p>
-                        <p><strong>Divisions:</strong> Men's Single, Women's Single</p>
-                        <p><strong>Levels:</strong> All Levels Welcome</p>
-                        <p><strong>Location:</strong>TBD </p>
-                        <p><strong>Entry Fee:</strong> $10 per Person</p>
-                        <p>A vibrant spring tournament ideal for beginners and experienced players. Special event for individual competitors.</p>
-                    </div>
-                    <div class="tournament-card" style="display:none;">
-                        <div class="tournament-badge">Fall</div>
-                        <h3>Fall Pro-Am Invitational</h3>
-                        <p><strong>Dates:</strong> September 20-22, 2026</p>
-                        <p><strong>Divisions:</strong> Pro-Am Team Events, Singles Brackets</p>
-                        <p><strong>Levels:</strong> Advanced & Professional</p>
-                        <p><strong>Location:</strong> Sunset Tennis Complex</p>
-                        <p><strong>Entry Fee:</strong> $100 - $250 per team</p>
-                        <p>Elite tournament featuring professional players paired with amateur competitors in exciting pro-am format matches.</p>
-                    </div>
-                    <div class="tournament-card" style="display:none;">
-                        <div class="tournament-badge">Monthly</div>
-                        <h3>Monthly Round-Robin Series</h3>
-                        <p><strong>Schedule:</strong> Every 3rd Weekend of Month</p>
-                        <p><strong>Format:</strong> Round-Robin & Knockout</p>
-                        <p><strong>Levels:</strong> Beginner - Advanced</p>
-                        <p><strong>Location:</strong> Sunset Tennis Complex</p>
-                        <p><strong>Entry Fee:</strong> $40 - $75</p>
-                        <p>Regular monthly competitions perfect for building skills and connecting with the tennis community throughout the year.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </ul>
+        </nav>
 
-        <!-- Registration Section -->
-        <section id="register" class="registration">
-            <div class="container">
-                <h2>Tournament Registration</h2>
-                <p class="registration-intro">Register for Sunset Spin Invitational tournaments using the form below. Complete your registration and we'll send you tournament details, schedule, and confirmation via email.</p>
-                
-                <!-- Google Form Embed -->
-<div id="login-message" style="
-    text-align:center;
-    padding:20px;
-    font-size:18px;
-">
-    Please sign in to register for tournaments.
-</div>
+    </div>
+</header>
 
-                
-                <div class="form-container" id="registration-form-container" style="display:none;">
-                    <iframe 
-                        src="https://docs.google.com/forms/d/e/1FAIpQLSec6HLShNKZdIfCp7Co6uLYHpQQmJYLUDSHZJ-BKccbPKuolA/viewform?embedded=true&hl=en_US" 
-                        width="100%" 
-                        height="1200" 
-                        frameborder="0" 
-                        marginheight="0" 
-                        marginwidth="0"
-                        style="border-radius: 8px; overflow: hidden;"
-                        allow="camera; microphone; payment; usb; autoplay; encrypted-media; picture-in-picture">
-                        Loading...
-                    </iframe>
-                </div>
-                
-                <!-- Registration Info -->
-                <div class="registration-info" style="display:none;">
-                    <h3>Registration Information</h3>
-                    <div class="info-grid">
-                        <div class="info-item" style="display:none;">
-                            <h4>📋 What to Include</h4>
-                            <ul>
-                                <li>Full name & contact info</li>
-                                <li>USTA rating (if applicable)</li>
-                                <li>Tournament selection</li>
-                                <li>Division preference</li>
-                                <li>Partner info (for doubles)</li>
-                            </ul>
-                        </div>
-                        <div class="info-item" style="display:none;">
-                            <h4>⏰ Important Dates</h4>
-                            <ul>
-                                <li>Early registration: 2 weeks prior</li>
-                                <li>Standard registration: 1 week prior</li>
-                                <li>Late registration: 3 days prior</li>
-                                <li>Deadline: 24 hours before event</li>
-                            </ul>
-                        </div>
-                        <div class="info-item" style="display:none;">
-                            <h4>💰 Fees & Refunds</h4>
-                            <ul>
-                                <li>Entry fees vary by tournament</li>
-                                <li>Full refund up to 7 days prior</li>
-                                <li>50% refund up to 3 days prior</li>
-                                <li>No refunds within 48 hours</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+<main>
 
-        <!-- Contact Section -->
-        <section id="contact" class="contact">
-            <div class="container">
-                <h2>Contact Sunset Spin Invitational</h2>
-                <div class="contact-grid">
-                    <div class="contact-item">
-                        <h3>📧 Email</h3>
-                        <p><a href="mailto:info@sunsetspininvitational.com">info@sunsetspininvitational.com</a></p>
-                        <p><a href="mailto:tournaments@sunsetspininvitational.com">tournaments@sunsetspininvitational.com</a></p>
-                    </div>
-                    <div class="contact-item">
-                        <h3>📱 Phone</h3>
-                        <p><a href="tel:+1-555-TENNIS-1">+1 (555) 836-6471</a></p>
-                        <p>Monday - Friday, 9am - 6pm</p>
-                    </div>
-                    <div class="contact-item">
-                        <h3>📍 Location</h3>
-                        <p>Sunset Tennis Complex</p>
-                        <p>123 Tennis Court Way</p>
-                        <p>Sunset Valley, CA 90210</p>
-                    </div>
-                    <div class="contact-item">
-                        <h3>🌐 Follow Us</h3>
-                        <div class="social-links">
-                            <a href="#facebook" target="_blank">Facebook</a>
-                            <a href="#instagram" target="_blank">Instagram</a>
-                            <a href="#twitter" target="_blank">Twitter</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
+    <!-- Hero -->
+    <section id="home" class="hero">
         <div class="container">
-            <p>&copy; 2026 Sunset Spin Invitational. All rights reserved.</p>
-            <p>Professional Tennis Tournament Organization</p>
+            <h2>Welcome to Sunset Spin Invitational</h2>
+            <p>Where Competition Meets Golden Hour</p>
+            <a href="#register" class="cta-button">Register Today</a>
         </div>
-    </footer>
-<!-- Auth Modal -->
+    </section>
+
+    <!-- About -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2>About Sunset Spin Invitational</h2>
+
+            <div class="about-content">
+                <p>Sunset Spin Invitational is an organization dedicated to promoting excellence in competitive tennis.</p>
+                <p>We build a vibrant tennis community through events and tournaments.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration -->
+    <section id="register" class="registration">
+        <div class="container">
+
+            <h2>Tournament Registration</h2>
+
+            <div id="login-message" style="text-align:center; padding:20px;">
+                Please sign in to register for tournaments.
+            </div>
+
+            <div id="registration-form-container" style="display:none;">
+                <iframe
+                    src="https://docs.google.com/forms/d/e/1FAIpQLSec6HLShNKZdIfCp7Co6uLYHpQQmJYLUDSHZJ-BKccbPKuolA/viewform?embedded=true&hl=en_US"
+                    width="100%"
+                    height="1200"
+                    frameborder="0">
+                </iframe>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <p>&copy; 2026 Sunset Spin Invitational</p>
+    </div>
+</footer>
+
+<!-- AUTH MODAL -->
 <div id="auth-modal" class="auth-modal">
 
     <div class="auth-box">
@@ -243,16 +103,11 @@
         <span class="close-modal" id="close-modal">&times;</span>
 
         <h2 id="auth-title">Sign In</h2>
-        <input  type="text"  id="auth-username"  placeholder="Username">
-      
+
+        <input type="text" id="auth-username" placeholder="Username">
         <input type="password" id="auth-password" placeholder="Password">
-  <input type="email" id="auth-email" placeholder="Email">
-       <input
-    id="auth-phone"
-    type="text"
-    placeholder="123-456-7890"
-    maxlength="12"
-/>
+        <input type="email" id="auth-email" placeholder="Email">
+        <input type="text" id="auth-phone" placeholder="123-456-7890" maxlength="12">
 
         <button id="auth-submit-btn">Submit</button>
 
@@ -261,6 +116,8 @@
     </div>
 
 </div>
+
 <script src="script.js" defer></script>
+
 </body>
 </html>
