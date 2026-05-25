@@ -288,8 +288,7 @@ authSubmitBtn.addEventListener(
                     .from("Registration")
                     .insert([
                         {
-                            User_id:
-                                user.id,
+
 
                             Username:
                                 username,
