@@ -258,8 +258,8 @@ authSubmitBtn.addEventListener("click", async (e) => {
                 .from("Registration")
                 .insert([
                     {
-                        Username: username,
-                        Email: user.email || email,
+                        username: username,
+                        email: user.email || email,
                         phone: phone,
                         Created_At: new Date().toISOString()
                     }
