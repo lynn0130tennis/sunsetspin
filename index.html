@@ -76,18 +76,43 @@
             </div>
 
             <div id="registration-form-container" style="display:none;">
-               <form id="tournament-form">
+              <section class="registration-section">
 
-    <input type="text" id="reg-username" readonly>
-    <input type="text" id="full-name" placeholder="Full Name" required>
-    <input type="email" id="reg-email" placeholder="Email" required>
-    <input type="text" id="reg-phone" placeholder="123-456-7890" required>
-    <input type="text" id="tournament" placeholder="Tournament Name" required>
-    <input type="text" id="division" placeholder="Division" required>
+    <div class="form-card">
 
-    <button type="submit">Register</button>
+        <h2>🎾 Tournament Registration</h2>
+        <p class="subtext">Join Sunset Spin Invitational</p>
 
-</form>
+        <form id="tournament-form">
+
+            <div class="row">
+                <input type="text" id="reg-username" readonly>
+                <label>Username</label>
+            </div>
+
+            <div class="row">
+                <input type="text" id="tournament" required>
+                <label>Tournament ID</label>
+            </div>
+
+            <div class="row">
+                <select id="division" required>
+                    <option value="">Select Division</option>
+                    <option>Singles</option>
+                    <option>Doubles</option>
+                    <option>Mixed Doubles</option>
+                </select>
+            </div>
+
+            <button type="submit">Register Now</button>
+
+            <p id="form-message"></p>
+
+        </form>
+
+    </div>
+
+</section>
 
 <p id="form-message"></p>
             </div>
