@@ -1,6 +1,6 @@
 console.log("SCRIPT LOADED");
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
-const SUPABASE_KEY = "sb_publishable_RXBO8ICJ7jGQFKYh2wDaig_7CqDU9fe";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
 const client = supabase.createClient(
     SUPABASE_URL,
