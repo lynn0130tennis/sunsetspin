@@ -334,7 +334,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
             updateUI();
         }, 500);
     }
-}););
+});
 
 // --------------------
 // LOGOUT
