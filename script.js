@@ -229,7 +229,6 @@ authSubmitBtn.addEventListener("click", async (e) => {
                 .from("Registration")
                 .insert([
                     {
-                        User_id: user.id,
                         Username: username,
                         Email: user.email || email,
                         phone: phone,
