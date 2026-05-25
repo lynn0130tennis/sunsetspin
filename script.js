@@ -1,4 +1,3 @@
-
 console.log("SCRIPT LOADED");
 
 // --------------------
@@ -7,7 +6,6 @@ console.log("SCRIPT LOADED");
 
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
-
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -78,20 +76,16 @@ function openModal(mode) {
     if (authPassword) authPassword.value = "";
     if (authUsername) authUsername.value = "";
     if (authPhone) authPhone.value = "";
-if (authGender) authGender.value = "";
-if (authUsta) authUsta.value = "";
+    if (authGender) authGender.value = "";
+    if (authUsta) authUsta.value = "";
 
-    
     if (mode === "signup") {
         authTitle.innerText = "Create Account";
-
         authUsername.style.display = "block";
         authPhone.style.display = "block";
         authEmail.style.display = "block";
-
     } else {
         authTitle.innerText = "Sign In";
-
         authUsername.style.display = "block";
         authPhone.style.display = "none";
         authEmail.style.display = "none";
@@ -125,37 +119,25 @@ authSubmitBtn.addEventListener("click", async (e) => {
     const email = authEmail.value.trim();
     const password = authPassword.value.trim();
     const phone = authPhone.value.trim();
-const gender = authGender?.value || null;
-const usta = authUsta?.value || null;
+    const gender = authGender?.value || null;
+    const usta = authUsta?.value || null;
 
-    
     authMessage.style.color = "red";
 
     // --------------------
-    // SIGN UP
+    // SIGN UP MODE
     // --------------------
+    if (authMode === "signup") {
 
-   // --------------------
-// SIGN UP
-// --------------------
+        if (!username || !email || !password || !phone) {
+            authMessage.innerText = "Please fill all fields.";
+            return;
+        }
 
-if (authMode === "signup") {
-
-    if (!username || !email || !password || !phone) {
-
-        authMessage.innerText =
-            "Please fill all fields.";
-
-        return;
-    }
-
-    // SIGN UP AUTH
-    const { data, error } =
-        await client.auth.signUp({
-
+        // SIGN UP AUTH
+        const { data, error } = await client.auth.signUp({
             email,
             password,
-
             options: {
                 data: {
                     username: username
@@ -163,137 +145,81 @@ if (authMode === "signup") {
             }
         });
 
-    // AUTH ERROR
-    if (error) {
+        // AUTH ERROR
+        if (error) {
+            authMessage.style.color = "red";
+            authMessage.innerText = error.message;
+            return;
+        }
 
-        authMessage.style.color = "red";
-        authMessage.innerText = error.message;
+        // USER
+        const user = data?.user;
 
-        return;
-    }
+        // INSERT INTO REGISTRATION TABLE
+        const { data: insertData, error: insertError } = await client
+            .from("Registration")
+            .insert([
+                {
+                    username,
+                    email: user?.email || email,
+                    phone,
+                    gender,
+                    usta,
+                    created_at: new Date().toISOString()
+                }
+            ]);
 
-    // USER
-    const user = data?.user;
+        console.log("INSERT RESULT:", insertData, insertError);
 
-    // INSERT INTO REGISTRATION TABLE
-    const {
-        data: insertData,
-        error: insertError
+        // INSERT ERROR
+        if (insertError) {
+            authMessage.style.color = "red";
+            authMessage.innerText = insertError.message;
+            return;
+        }
 
-    } = await client
-        .from("Registration")
-        .insert([
-            {
-                username,
-                email: user?.email || email,
-                phone,
-                gender,
-                usta,
-                created_at:
-                    new Date().toISOString()
+        // SEND WELCOME EMAIL (CLEANED, ONE SINGLE ATTEMPT)
+        try {
+            const response = await fetch(
+                "https://uppzqygxtpoifkaddoyi.supabase.co/functions/v1/send-welcome-email",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({
+                        email,
+                        username
+                    })
+                }
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log("EMAIL RESULT SUCCESS:", result);
+            } else {
+                console.log("EMAIL SERVER ERROR STATUS:", response.status);
             }
-        ]);
 
-    console.log(
-        "INSERT RESULT:",
-        insertData,
-        insertError
-    );
+        } catch (err) {
+            console.log("EMAIL TRANSACTION FAILED:", err);
+        }
 
-    // INSERT ERROR
-    if (insertError) {
+        // SUCCESS UI CHANGES
+        authMessage.style.color = "green";
+        authMessage.innerText = "Account created successfully! 🎾";
 
-        authMessage.style.color = "red";
-        authMessage.innerText =
-            insertError.message;
+        setTimeout(() => {
+            closeAuthModal();
+            updateUI();
+        }, 800);
 
-        return;
-    }
-// SEND WELCOME EMAIL
-try {
-
-// Ensure SUPABASE_KEY is your public 'anon' key
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM"; 
-
-// --------------------
-// SEND WELCOME EMAIL
-// --------------------
-try {
-    // 'response' is created here, inside the try block
-    const response = await fetch(
-      "https://uppzqygxtpoifkaddoyi.supabase.co/functions/v1/send-welcome-email",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`
-        },
-        body: JSON.stringify({
-          email,
-          username
-        })
-      }
-    );
-
-    // This is the ONLY place you should read or log the response
-    if (response.ok) {
-        const result = await response.json();
-        console.log("EMAIL RESULT SUCCESS:", result);
+    // --------------------
+    // SIGN IN MODE
+    // --------------------
     } else {
-        // If the server returns an error code (like 400 or 500)
-        console.log("SERVER ERROR STATUS:", response.status);
-    }
-
-} catch (err) {
-    // CRITICAL: Do NOT reference 'response' here! 
-    // It doesn't exist out here. Only log 'err'.
-    console.log("NETWORK OR FETCH ERROR:", err);
-}
-
-    // Read the stream EXACTLY ONCE here
-    const result = await response.json();
-
-    // Use the variable to log, do not call response.json() again
-    console.log("EMAIL RESULT:", result);
-
-} catch (err) {
-    console.log("EMAIL ERROR:", err);
-}
-
-const data = await response.json();
-console.log(data);
-
-    const result = await response.json();
-
-    console.log("EMAIL RESULT:", result);
-
-} catch (err) {
-
-    console.log("EMAIL ERROR:", err);
-
-}
-
-    // SUCCESS
-    authMessage.style.color = "green";
-
-    authMessage.innerText =
-        "Account created successfully! 🎾";
-
-    setTimeout(() => {
-
-        closeAuthModal();
-
-        updateUI();
-
-    }, 800);
-}
-
-    // --------------------
-    // SIGN IN
-    // --------------------
-
-    else {
 
         if (!username || !password) {
             authMessage.innerText = "Enter username and password.";
@@ -311,11 +237,10 @@ console.log(data);
             return;
         }
 
-        const { error: loginError } =
-            await client.auth.signInWithPassword({
-                email: data.email,
-                password
-            });
+        const { error: loginError } = await client.auth.signInWithPassword({
+            email: data.email,
+            password
+        });
 
         if (loginError) {
             authMessage.innerText = loginError.message;
@@ -342,26 +267,18 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // --------------------
-// UI UPDATE (FIXED AUTO-FILL)
+// UI UPDATE
 // --------------------
 
 async function updateUI() {
-
-    const { data: { session } } =
-        await client.auth.getSession();
-
+    const { data: { session } } = await client.auth.getSession();
     const regUsernameField = document.getElementById("reg-username");
 
     if (session) {
+        const username = session.user.user_metadata?.username || session.user.email;
 
-        const username =
-            session.user.user_metadata?.username ||
-            session.user.email;
-
-        // HEADER
         userStatus.textContent = username;
 
-        // AUTO FILL FORM (FIXED)
         if (regUsernameField) {
             regUsernameField.value = username;
         }
@@ -374,7 +291,6 @@ async function updateUI() {
         loginMessage.style.display = "none";
 
     } else {
-
         userStatus.textContent = "";
 
         if (regUsernameField) {
@@ -391,7 +307,7 @@ async function updateUI() {
 }
 
 // --------------------
-// SAFE INIT (IMPORTANT FIX)
+// SAFE INIT
 // --------------------
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -405,7 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
 client.auth.onAuthStateChange(() => {
     updateUI();
 });
-
 
 // --------------------
 // TOURNAMENT FORM SUBMIT
@@ -421,8 +336,7 @@ if (tournamentForm) {
         const username = document.getElementById("reg-username").value;
         const tournament = document.getElementById("tournament").value;
         const division = document.getElementById("division").value;
- const compete_level = document.getElementById("level").value;
-        
+        const compete_level = document.getElementById("level").value;
 
         if (!username || !tournament || !division) {
             formMessage.style.color = "red";
@@ -445,7 +359,7 @@ if (tournamentForm) {
                     username: username,
                     tournament_code: tournament,
                     division: division,
-                      compete_level: compete_level,
+                    compete_level: compete_level,
                     created_at: new Date().toISOString()
                 }
             ]);
@@ -462,11 +376,8 @@ if (tournamentForm) {
 
         tournamentForm.reset();
 
-        // keep username auto-filled again
         const session = sessionData.session;
-        const name =
-            session.user.user_metadata?.username ||
-            session.user.email;
+        const name = session.user.user_metadata?.username || session.user.email;
 
         document.getElementById("reg-username").value = name;
     });
