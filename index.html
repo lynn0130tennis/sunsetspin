@@ -252,7 +252,13 @@
       
         <input type="password" id="auth-password" placeholder="Password">
   <input type="email" id="auth-email" placeholder="Email">
-<input id="auth-phone" placeholder="Phone Number">
+        <input
+    id="auth-phone"
+    type="tel"
+    placeholder="Phone (e.g. 123-456-7890)"
+    maxlength="14"
+/>
+
         <button id="auth-submit-btn">Submit</button>
 
         <p id="auth-message"></p>
