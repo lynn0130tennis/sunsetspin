@@ -299,6 +299,8 @@ if (tournamentForm) {
         const username = document.getElementById("reg-username").value;
         const tournament = document.getElementById("tournament").value;
         const division = document.getElementById("division").value;
+ const compete_level = document.getElementById("compete_level").value;
+        
 
         if (!username || !tournament || !division) {
             formMessage.style.color = "red";
@@ -319,8 +321,9 @@ if (tournamentForm) {
             .insert([
                 {
                     username: username,
-                    tournament: tournament,
+                    tournament_code: tournament,
                     division: division,
+                      compete_level: compete_level,
                     created_at: new Date().toISOString()
                 }
             ]);
