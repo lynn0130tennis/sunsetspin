@@ -31,6 +31,8 @@ const authUsername = document.getElementById("auth-username");
 const authEmail = document.getElementById("auth-email");
 const authPassword = document.getElementById("auth-password");
 const authPhone = document.getElementById("auth-phone");
+const authGender = document.getElementById("auth-gender");
+const authUsta = document.getElementById("auth-usta");
 
 const authSubmitBtn = document.getElementById("auth-submit-btn");
 const authMessage = document.getElementById("auth-message");
@@ -76,7 +78,10 @@ function openModal(mode) {
     if (authPassword) authPassword.value = "";
     if (authUsername) authUsername.value = "";
     if (authPhone) authPhone.value = "";
+if (authGender) authGender.value = "";
+if (authUsta) authUsta.value = "";
 
+    
     if (mode === "signup") {
         authTitle.innerText = "Create Account";
 
@@ -134,6 +139,10 @@ authSubmitBtn.addEventListener("click", async (e) => {
             return;
         }
 
+        const gender = authGender ? authGender.value : "";
+const usta = authUsta ? authUsta.value : "";
+
+        
         const { data, error } = await client.auth.signUp({
             email,
             password,
@@ -154,6 +163,8 @@ authSubmitBtn.addEventListener("click", async (e) => {
                 username,
                 email,
                 phone,
+                 gender,
+        usta_rating: usta,
                 created_at: new Date().toISOString()
             }
         ]);
