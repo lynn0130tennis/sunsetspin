@@ -173,7 +173,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
     }
 
     if (authMode === "signup") {
- const phonePattern = /^\+?[1-9]\d{1,14}$/; // E.164 format (international)
+       const phonePattern = /^\+?[1-9]\d{1,14}$/; 
         if (!username) {
             authMessage.style.color = "red";
             authMessage.innerText =
