@@ -202,7 +202,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
     }
 
     if (authMode === "signup") {
-       const phonePattern = /^\+?[1-9]\d{1,14}$/; 
+       const phonePattern = /^\d{3}-\d{3}-\d{4}$/;
         if (!username) {
             authMessage.style.color = "red";
             authMessage.innerText =
@@ -217,12 +217,12 @@ authSubmitBtn.addEventListener("click", async (e) => {
             return;
         }
         
-         if (!phonePattern.test(phone)) {
-        authMessage.style.color = "red";
-        authMessage.innerText =
-            "Enter a valid phone number (numbers only, optional +country code).";
-        return;
-    }
+    if (!phonePattern.test(phone)) {
+    authMessage.style.color = "red";
+    authMessage.innerText =
+        "Enter a valid phone number (123-456-7890).";
+    return;
+}
 
     let result;
     }
