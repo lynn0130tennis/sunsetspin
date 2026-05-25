@@ -226,7 +226,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
                         User_id: user.id,
                         Username: username,
                         Email: user.email || email,
-                        Phone: phone,
+                        phone: phone,
                         Created_At: new Date().toISOString()
                     }
                 ]);
