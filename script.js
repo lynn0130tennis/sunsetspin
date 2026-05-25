@@ -180,7 +180,7 @@ authSubmitBtn.addEventListener(
             .from("Registration")
             .insert([
                 {
-                    User_id: user.username
+                    User_id: user.username,
                     Email: user.email || email
                 }
             ]);
