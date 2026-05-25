@@ -57,6 +57,35 @@ const authPassword =
 
 const authPhone =
     document.getElementById("auth-phone");
+// 👇 ADD THIS RIGHT HERE
+if (authPhone) {
+
+    authPhone.addEventListener("input", (e) => {
+
+        let value = e.target.value;
+
+        // remove non-digits
+        value = value.replace(/\D/g, "");
+
+        // limit to 10 digits
+        value = value.substring(0, 10);
+
+        // format XXX-XXX-XXXX
+        if (value.length > 6) {
+            value = value.replace(
+                /(\d{3})(\d{3})(\d{0,4})/,
+                "$1-$2-$3"
+            );
+        } else if (value.length > 3) {
+            value = value.replace(
+                /(\d{3})(\d{0,3})/,
+                "$1-$2"
+            );
+        }
+
+        e.target.value = value;
+    });
+}
 
 const authSubmitBtn =
     document.getElementById("auth-submit-btn");
