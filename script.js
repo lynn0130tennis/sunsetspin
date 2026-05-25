@@ -212,25 +212,20 @@ if (authMode === "signup") {
 // SEND WELCOME EMAIL
 try {
 
-    const response = await fetch(
-        "https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email",
-        {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json",
-
-                // IMPORTANT
-                "Authorization":
-                    `Bearer ${SUPABASE_KEY}`
-            },
-
-            body: JSON.stringify({
-                email: email,
-                username: username
-            })
-        }
-    );
+const response = await fetch(
+  "https://uppzqygxtpoifkaddoyi.supabase.co/functions/v1/send-welcome-email",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    },
+    body: JSON.stringify({
+      email,
+      username
+    })
+  }
+);
 
     const result = await response.json();
 
