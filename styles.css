@@ -667,7 +667,7 @@ body {
     display: flex;
     justify-content: center;
     padding: 60px 20px;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
+    background: #f5f7fb;  /* light clean background */
 }
 
 .form-card {
