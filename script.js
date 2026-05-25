@@ -164,7 +164,7 @@ const usta = authUsta ? authUsta.value : "";
                 email,
                 phone,
                  gender,
-        usta_rating: usta,
+                 rating,
                 created_at: new Date().toISOString()
             }
         ]);
