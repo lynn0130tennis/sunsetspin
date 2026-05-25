@@ -287,31 +287,59 @@ authSubmitBtn.addEventListener("click", async (e) => {
     // SIGN IN
     // --------------------
 
-    else {
+        const username =
+        authUsername
+            ? authUsername.value.trim()
+            : "";
 
-        result =
-            await client.auth.signInWithPassword({
-                email,
-                password
-            });
-
-        console.log("SIGNIN RESULT:", result);
-
-        if (result.error) {
-            authMessage.style.color = "red";
-            authMessage.innerText = result.error.message;
-            return;
-        }
-
-        authMessage.style.color = "green";
+    if (!username) {
+        authMessage.style.color = "red";
         authMessage.innerText =
-            "Signed in successfully!";
-
-        setTimeout(() => {
-            closeAuthModal();
-            updateUI();
-        }, 500);
+            "Please enter username.";
+        return;
     }
+
+    // 1. Find email from Registration table
+    const { data, error } =
+        await client
+            .from("Registration")
+            .select("Email")
+            .eq("Username", username)
+            .single();
+
+    if (error || !data) {
+        authMessage.style.color = "red";
+        authMessage.innerText =
+            "Username not found.";
+        return;
+    }
+
+    const emailFromUsername = data.Email;
+
+    // 2. Sign in with email + password
+    const result =
+        await client.auth.signInWithPassword({
+            email: emailFromUsername,
+            password
+        });
+
+    console.log("SIGNIN RESULT:", result);
+
+    if (result.error) {
+        authMessage.style.color = "red";
+        authMessage.innerText =
+            result.error.message;
+        return;
+    }
+
+    authMessage.style.color = "green";
+    authMessage.innerText =
+        "Signed in successfully!";
+
+    setTimeout(() => {
+        closeAuthModal();
+        updateUI();
+    }, 500);
 });
 
 // --------------------
