@@ -196,7 +196,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
     }
 
     let result;
-
+    }
     // --------------------
     // SIGN UP
     // --------------------
