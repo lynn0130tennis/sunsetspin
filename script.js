@@ -156,6 +156,20 @@ const { data, error } = await client.auth.signUp({
 
 if (error) {
     authMessage.innerText = error.message;
+await fetch(
+  "https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email: email,
+      username: username
+    })
+  }
+);
+    
     return;
 }
 
