@@ -173,7 +173,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
     }
 
     if (authMode === "signup") {
-
+ const phonePattern = /^\+?[1-9]\d{1,14}$/; // E.164 format (international)
         if (!username) {
             authMessage.style.color = "red";
             authMessage.innerText =
@@ -187,6 +187,12 @@ authSubmitBtn.addEventListener("click", async (e) => {
                 "Please enter a phone number.";
             return;
         }
+        
+         if (!phonePattern.test(phone)) {
+        authMessage.style.color = "red";
+        authMessage.innerText =
+            "Enter a valid phone number (numbers only, optional +country code).";
+        return;
     }
 
     let result;
