@@ -139,9 +139,8 @@ authSubmitBtn.addEventListener("click", async (e) => {
             return;
         }
 
-        const gender = authGender ? authGender.value : "";
-const usta = authUsta ? authUsta.value : "";
-
+const gender = authGender?.value || "";
+const usta = authUsta?.value || "";
         
         const { data, error } = await client.auth.signUp({
             email,
@@ -164,7 +163,7 @@ const usta = authUsta ? authUsta.value : "";
                 email,
                 phone,
                  gender,
-                 rating,
+                 usta,
                 created_at: new Date().toISOString()
             }
         ]);
