@@ -145,72 +145,66 @@ authSubmitBtn.addEventListener(
         // SIGN UP
         // --------------------
 
-        if (authMode === "signup") {
+      if (authMode === "signup") {
 
-            result =
-                await client.auth.signUp({
-                    email,
-                    password
-                });
+    result = await client.auth.signUp({
+        email,
+        password
+    });
 
-            if (result.error) {
+    console.log("SIGNUP RESULT:", result);
 
-                authMessage.style.color =
-                    "red";
+    if (result.error) {
 
-                authMessage.innerText =
-                    result.error.message;
+        authMessage.style.color = "red";
+        authMessage.innerText =
+            result.error.message;
 
-                return;
-            }
+        return;
+    }
 
-            // Save user to Registration table
+    const user = result.data.user;
 
-            const user =
-                result.data.user;
+    console.log("USER:", user);
 
-            if (user) {
+    // INSERT INTO TABLE
 
-                const insertResult =
-                    await client
-                        .from("Registration")
-                        .insert([
-                            {
-                                User_id: user.id,
-                                Email: user.email
-                            }
-                        ]);
-
-                console.log(
-                    "Insert Result:",
-                    insertResult
-                );
-
-onsole.log(insertResult);
-
-if (insertResult.error) {
-
-    console.error(
-        "Insert Error:",
-        insertResult.error
-    );
-
-} else {
+    const insertResult =
+        await client
+            .from("Registration")
+            .insert([
+                {
+                    User_id: user.id,
+                    Email: user.email
+                }
+            ]);
 
     console.log(
-        "Insert Success"
+        "INSERT RESULT:",
+        insertResult
     );
+
+    if (insertResult.error) {
+
+        console.error(
+            insertResult.error
+        );
+
+        authMessage.style.color =
+            "red";
+
+        authMessage.innerText =
+            insertResult.error.message;
+
+        return;
+    }
+
+    authMessage.style.color =
+        "green";
+
+    authMessage.innerText =
+        "Account created!";
 }
-                
-            }
-
-            authMessage.style.color =
-                "green";
-
-            authMessage.innerText =
-                "Account created successfully!";
-
-        }
 
         // --------------------
         // SIGN IN
