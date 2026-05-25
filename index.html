@@ -20,14 +20,12 @@
 
         <nav class="nav">
             <ul>
-
                 <li><a href="#home">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#tournaments">Tournaments</a></li>
                 <li><a href="#register">Register</a></li>
                 <li><a href="#contact">Contact</a></li>
 
-                <!-- USER STATUS (ONLY ONE) -->
                 <li id="user-status-container">
                     <span id="user-status"></span>
                 </li>
@@ -44,28 +42,27 @@
 
 <main>
 
-    <!-- Hero -->
-    <section id="home" class="hero">
-        <div class="container">
-            <h2>Welcome to Sunset Spin Invitational</h2>
-            <p>Where Competition Meets Golden Hour</p>
-            <a href="#register" class="cta-button">Register Today</a>
+<!-- HERO -->
+<section id="home" class="hero">
+    <div class="container">
+        <h2>Welcome to Sunset Spin Invitational</h2>
+        <p>Where Competition Meets Golden Hour</p>
+        <a href="#register" class="cta-button">Register Today</a>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about">
+    <div class="container">
+        <h2>About Sunset Spin Invitational</h2>
+        <div class="about-content">
+            <p>Sunset Spin Invitational is an organization dedicated to promoting competitive tennis in Miami.</p>
+            <p>We build a strong tennis community through tournaments and events.</p>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- About -->
-    <section id="about" class="about">
-        <div class="container">
-            <h2>About Sunset Spin Invitational</h2>
-
-            <div class="about-content">
-                <p>Sunset Spin Invitational is an organization dedicated to promoting excellence in competitive tennis.</p>
-                <p>We build a vibrant tennis community through events and tournaments.</p>
-            </div>
-        </div>
-    </section>
-
-<!-- Upcoming Events Section -->
+<!-- UPCOMING EVENTS -->
 <section id="tournaments" class="tournaments">
     <div class="container">
 
@@ -76,100 +73,92 @@
             <div class="tournament-card">
                 <div class="tournament-badge">Summer</div>
                 <h3>Summer Invitational Championship</h3>
-                 <p><strong>Tounament ID:</strong> SS00126 </p>
+                <p><strong>Tournament ID:</strong> SS00126</p>
                 <p><strong>Dates:</strong> June 15–17, 2026</p>
                 <p><strong>Division:</strong> Singles & Doubles</p>
                 <p><strong>Level:</strong> 3.0+</p>
                 <p><strong>Location:</strong> Miami, FL</p>
-                <p>A competitive summer tournament for all levels with prizes and trophies.</p>
             </div>
 
             <div class="tournament-card">
                 <div class="tournament-badge">Open</div>
                 <h3>Summer Open Series</h3>
-                <p><strong>Tounament ID:</strong> SS00226 </p>
+                <p><strong>Tournament ID:</strong> SS00226</p>
                 <p><strong>Dates:</strong> June 30 – Aug 31, 2026</p>
                 <p><strong>Division:</strong> Singles</p>
-                <p><strong>Level:</strong> All Levels Welcome</p>
+                <p><strong>Level:</strong> All Levels</p>
                 <p><strong>Location:</strong> Miami Courts</p>
-                <p>Perfect for beginners and competitive players looking to improve match play.</p>
-            </div>
-</div>
-          
-    
-    <!-- Registration -->
-    <section id="register" class="registration">
-        <div class="container">
-
-            <h2>Tournament Registration</h2>
-
-            <div id="login-message" style="text-align:center; padding:20px;">
-                Please sign in to register for tournaments.
-            </div>
-
-            <div id="registration-form-container" style="display:none;">
-              <section class="registration-section">
-
-    <div class="form-card">
-
-        <h2>🎾 Tournament Registration</h2>
-        <p class="subtext">Join Sunset Spin Invitational</p>
-
-        <form id="tournament-form">
-
-            <div class="row">
-                <input type="text" id="reg-username" readonly>
-                <label>Username</label>
-            </div>
-
-        
-            <div class="row">
-                <select id="tournament" required>
-                    <option value="">Tournament ID</option>
-                    <option>SS00126</option>
-                    <option>SS00226</option>
-                  </select>
-            </div>
-
-
-         
-
-            <div class="row">
-                <select id="division" required>
-                    <option value="">Select Division</option>
-                    <option>Singles</option>
-                    <option>Doubles</option>
-                    <option>Mixed Doubles</option>
-                </select>
-            </div>
-            
-   <div class="row">
-                <select id="Level" required>
-                    <option value="">CompeteLevel(can be different from your USTA level</option>
-                    <option>3</option>
-                    <option>3.5</option>
-                    <option>4</option>
-                     <option>4.5</option>
-                </select>
-            </div>
-
-            
-
-            <button type="submit">Register Now</button>
-
-            <p id="form-message"></p>
-
-        </form>
-
-    </div>
-
-</section>
-
-<p id="form-message"></p>
             </div>
 
         </div>
-    </section>
+    </div>
+</section>
+
+<!-- REGISTER -->
+<section id="register" class="registration">
+    <div class="container">
+
+        <h2>Tournament Registration</h2>
+
+        <div id="login-message" style="text-align:center; padding:20px;">
+            Please sign in to register for tournaments.
+        </div>
+
+        <div id="registration-form-container" style="display:none;">
+
+            <section class="registration-section">
+                <div class="form-card">
+
+                    <h2>🎾 Tournament Registration</h2>
+                    <p class="subtext">Join Sunset Spin Invitational</p>
+
+                    <form id="tournament-form">
+
+                        <div class="row">
+                            <input type="text" id="reg-username" readonly>
+                            <label>Username</label>
+                        </div>
+
+                        <div class="row">
+                            <select id="tournament" required>
+                                <option value="">Tournament ID</option>
+                                <option>SS00126</option>
+                                <option>SS00226</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <select id="division" required>
+                                <option value="">Select Division</option>
+                                <option>Singles</option>
+                                <option>Doubles</option>
+                                <option>Mixed Doubles</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <select id="level" required>
+                                <option value="">Playing Level</option>
+                                <option>3.0</option>
+                                <option>3.5</option>
+                                <option>4.0</option>
+                                <option>4.5</option>
+                            </select>
+                        </div>
+
+                        <button type="submit">Register Now</button>
+
+                        <p id="form-message"></p>
+
+                    </form>
+
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+</section>
 
 </main>
 
@@ -193,27 +182,23 @@
         <input type="email" id="auth-email" placeholder="Email">
         <input type="text" id="auth-phone" placeholder="123-456-7890" maxlength="12">
 
-        <!-- GENDER -->
-<select id="auth-gender">
-    <option value="">Select Gender</option>
-    <option value="Male">Male</option>
-    <option value="Female">Female</option>
+        <select id="auth-gender">
+            <option value="">Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
 
-</select>
+        <select id="auth-usta">
+            <option value="">USTA Rating</option>
+            <option>2.5</option>
+            <option>3.0</option>
+            <option>3.5</option>
+            <option>4.0</option>
+            <option>4.5</option>
+            <option>5.0+</option>
+        </select>
 
-<!-- USTA RATING -->
-<select id="auth-usta">
-    <option value="">USTA Rating</option>
-    <option value="2.5">2.5</option>
-    <option value="3.0">3.0</option>
-    <option value="3.5">3.5</option>
-    <option value="4.0">4.0</option>
-    <option value="4.5">4.5</option>
-    <option value="5.0">5.0+</option>
-</select>
-        
         <button id="auth-submit-btn">Submit</button>
-
         <p id="auth-message"></p>
 
     </div>
