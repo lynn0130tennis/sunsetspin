@@ -210,12 +210,31 @@ authSubmitBtn.addEventListener("click", async (e) => {
     // BASIC VALIDATION
     // --------------------
 
+  if (authMode === "signup") {
+
     if (!email || !password) {
+
         authMessage.style.color = "red";
+
         authMessage.innerText =
             "Please enter email and password.";
+
         return;
     }
+}
+
+if (authMode === "signin") {
+
+    if (!username || !password) {
+
+        authMessage.style.color = "red";
+
+        authMessage.innerText =
+            "Please enter username and password.";
+
+        return;
+    }
+}
 
     let result;
 
