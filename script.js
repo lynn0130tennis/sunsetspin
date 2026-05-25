@@ -1,13 +1,15 @@
-
+console.log("SCRIPT LOADED");
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_RXBO8ICJ7jGQFKYh2wDaig_7CqDU9fe";
-
-
 
 const client = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+// --------------------
+// DOM ELEMENTS
+// --------------------
 
 const signinBtn =
     document.getElementById("signin-btn");
@@ -56,6 +58,10 @@ const closeModal =
 
 let authMode = "signin";
 
+// --------------------
+// MODAL FUNCTIONS
+// --------------------
+
 function openModal(mode) {
 
     authMode = mode;
@@ -67,16 +73,10 @@ function openModal(mode) {
     authEmail.value = "";
     authPassword.value = "";
 
-    if (mode === "signup") {
-
-        authTitle.innerText =
-            "Create Account";
-
-    } else {
-
-        authTitle.innerText =
-            "Sign In";
-    }
+    authTitle.innerText =
+        mode === "signup"
+            ? "Create Account"
+            : "Sign In";
 }
 
 function closeAuthModal() {
@@ -84,39 +84,66 @@ function closeAuthModal() {
     authModal.style.display = "none";
 }
 
-signupBtn.addEventListener("click", () => {
+// --------------------
+// BUTTON EVENTS
+// --------------------
 
-    openModal("signup");
-});
+signupBtn.addEventListener(
+    "click",
+    () => openModal("signup")
+);
 
-signinBtn.addEventListener("click", () => {
+signinBtn.addEventListener(
+    "click",
+    () => openModal("signin")
+);
 
-    openModal("signin");
-});
+closeModal.addEventListener(
+    "click",
+    closeAuthModal
+);
 
-closeModal.addEventListener("click", () => {
+window.addEventListener(
+    "click",
+    (e) => {
 
-    closeAuthModal();
-});
+        if (e.target === authModal) {
 
-window.addEventListener("click", (e) => {
-
-    if (e.target === authModal) {
-
-        closeAuthModal();
+            closeAuthModal();
+        }
     }
-});
+);
+
+// --------------------
+// AUTH SUBMIT
+// --------------------
 
 authSubmitBtn.addEventListener(
     "click",
     async () => {
 
-        const email = authEmail.value;
+        const email =
+            authEmail.value.trim();
 
         const password =
-            authPassword.value;
+            authPassword.value.trim();
+
+        if (!email || !password) {
+
+            authMessage.style.color =
+                "red";
+
+            authMessage.innerText =
+                "Please enter email and password.";
+
+            return;
+        }
 
         let result;
+
+        // --------------------
+        // SIGN UP
+        // --------------------
 
         if (authMode === "signup") {
 
@@ -126,43 +153,82 @@ authSubmitBtn.addEventListener(
                     password
                 });
 
-        } else {
+            if (result.error) {
+
+                authMessage.style.color =
+                    "red";
+
+                authMessage.innerText =
+                    result.error.message;
+
+                return;
+            }
+
+            // Save user to Registration table
+
+            const user =
+                result.data.user;
+
+            if (user) {
+
+                const insertResult =
+                    await client
+                        .from("Registration")
+                        .insert([
+                            {
+                                User_id: user.id,
+                                Email: user.email
+                            }
+                        ]);
+
+                console.log(
+                    "Insert Result:",
+                    insertResult
+                );
+            }
+
+            authMessage.style.color =
+                "green";
+
+            authMessage.innerText =
+                "Account created successfully!";
+
+        }
+
+        // --------------------
+        // SIGN IN
+        // --------------------
+
+        else {
 
             result =
                 await client.auth
-                .signInWithPassword({
-                    email,
-                    password
-                });
-        }
+                    .signInWithPassword({
+                        email,
+                        password
+                    });
 
-        if (result.error) {
-
-            authMessage.style.color =
-                "red";
-
-            authMessage.innerText =
-                result.error.message;
-
-        } else {
-
-            if (authMode === "signup") {
+            if (result.error) {
 
                 authMessage.style.color =
-                    "green";
+                    "red";
 
                 authMessage.innerText =
-                    "Account created! Check email.";
+                    result.error.message;
 
-            } else {
-
-                closeAuthModal();
-
-                updateUI();
+                return;
             }
+
+            closeAuthModal();
+
+            updateUI();
         }
     }
 );
+
+// --------------------
+// LOGOUT
+// --------------------
 
 logoutBtn.addEventListener(
     "click",
@@ -174,11 +240,16 @@ logoutBtn.addEventListener(
     }
 );
 
+// --------------------
+// UPDATE UI
+// --------------------
+
 async function updateUI() {
 
     const {
         data: { session }
-    } = await client.auth.getSession();
+    } =
+        await client.auth.getSession();
 
     if (session) {
 
@@ -221,5 +292,18 @@ async function updateUI() {
             "block";
     }
 }
+
+// --------------------
+// AUTO SESSION CHECK
+// --------------------
+
+client.auth.onAuthStateChange(
+    () => {
+
+        updateUI();
+    }
+);
+
+// Initial load
 
 updateUI();
