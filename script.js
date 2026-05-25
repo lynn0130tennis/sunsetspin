@@ -283,3 +283,66 @@ document.addEventListener("DOMContentLoaded", () => {
 client.auth.onAuthStateChange(() => {
     updateUI();
 });
+
+
+// --------------------
+// TOURNAMENT FORM SUBMIT
+// --------------------
+
+const tournamentForm = document.getElementById("tournament-form");
+const formMessage = document.getElementById("form-message");
+
+if (tournamentForm) {
+    tournamentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("reg-username").value;
+        const tournament = document.getElementById("tournament").value;
+        const division = document.getElementById("division").value;
+
+        if (!username || !tournament || !division) {
+            formMessage.style.color = "red";
+            formMessage.innerText = "Please complete all fields.";
+            return;
+        }
+
+        const { data: sessionData } = await client.auth.getSession();
+
+        if (!sessionData.session) {
+            formMessage.style.color = "red";
+            formMessage.innerText = "You must be signed in.";
+            return;
+        }
+
+        const { error } = await client
+            .from("tournament_regi")
+            .insert([
+                {
+                    username: username,
+                    tournament: tournament,
+                    division: division,
+                    created_at: new Date().toISOString()
+                }
+            ]);
+
+        if (error) {
+            console.log(error);
+            formMessage.style.color = "red";
+            formMessage.innerText = error.message;
+            return;
+        }
+
+        formMessage.style.color = "green";
+        formMessage.innerText = "Registration successful! 🎾";
+
+        tournamentForm.reset();
+
+        // keep username auto-filled again
+        const session = sessionData.session;
+        const name =
+            session.user.user_metadata?.username ||
+            session.user.email;
+
+        document.getElementById("reg-username").value = name;
+    });
+}
