@@ -72,16 +72,20 @@ function openModal(mode) {
     authTitle.innerText =
         "Create Account";
 
+if (authUsername) {
     authUsername.style.display =
         "block";
+}
 
 } else {
 
     authTitle.innerText =
         "Sign In";
 
+if (authUsername) {
     authUsername.style.display =
         "none";
+}
 }
 }
 
