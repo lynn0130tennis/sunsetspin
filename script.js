@@ -114,11 +114,15 @@ function openModal(mode) {
 
     authMessage.innerText = "";
 
-    authEmail.value = "";
-    authPassword.value = "";
-
+    // reset values
+    if (authEmail) authEmail.value = "";
+    if (authPassword) authPassword.value = "";
     if (authUsername) authUsername.value = "";
     if (authPhone) authPhone.value = "";
+
+    // --------------------
+    // SIGN UP UI
+    // --------------------
 
     if (mode === "signup") {
 
@@ -131,16 +135,28 @@ function openModal(mode) {
         if (authPhone)
             authPhone.style.display = "block";
 
-    } else {
+        if (authEmail)
+            authEmail.style.display = "block";
+
+    }
+
+    // --------------------
+    // SIGN IN UI
+    // --------------------
+
+    else {
 
         authTitle.innerText =
             "Sign In";
 
         if (authUsername)
-            authUsername.style.display = "none";
+            authUsername.style.display = "block";
 
         if (authPhone)
             authPhone.style.display = "none";
+
+        if (authEmail)
+            authEmail.style.display = "none";
     }
 }
 
