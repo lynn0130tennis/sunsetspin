@@ -125,7 +125,10 @@ authSubmitBtn.addEventListener("click", async (e) => {
     const email = authEmail.value.trim();
     const password = authPassword.value.trim();
     const phone = authPhone.value.trim();
+const gender = authGender?.value || null;
+const usta = authUsta?.value || null;
 
+    
     authMessage.style.color = "red";
 
     // --------------------
@@ -139,39 +142,48 @@ authSubmitBtn.addEventListener("click", async (e) => {
             return;
         }
 
-const gender = authGender?.value || "";
-const usta = authUsta?.value || "";
-        
-        const { data, error } = await client.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    username: username
-                }
-            }
-        });
 
-        if (error) {
-            authMessage.innerText = error.message;
-            return;
+
+const { data, error } = await client.auth.signUp({
+    email,
+    password,
+    options: {
+        data: {
+            username: username
         }
+    }
+});
 
- const { data: insertData, error: insertError } =
+if (error) {
+    authMessage.innerText = error.message;
+    return;
+}
+
+// IMPORTANT: get user from signup result
+const user = data?.user;
+
+const { data: insertData, error: insertError } =
     await client.from("Registration").insert([
         {
             username,
-            email: user.email || email,
+            email: user?.email || email,
             phone,
-            gender: authGender?.value || null,
-            usta: authUsta?.value || null,
+            gender,
+            usta,
             created_at: new Date().toISOString()
         }
     ]);
-        ]);
 
-        authMessage.style.color = "green";
-        authMessage.innerText = "Account created!";
+console.log("INSERT RESULT:", { insertData, insertError });
+
+if (insertError) {
+    authMessage.style.color = "red";
+    authMessage.innerText = insertError.message;
+    return;
+}
+
+authMessage.style.color = "green";
+authMessage.innerText = "Account created!";
 
         setTimeout(() => {
             closeAuthModal();
