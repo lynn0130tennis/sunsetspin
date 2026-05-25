@@ -185,6 +185,23 @@ authSubmitBtn.addEventListener(
                     "Insert Result:",
                     insertResult
                 );
+
+onsole.log(insertResult);
+
+if (insertResult.error) {
+
+    console.error(
+        "Insert Error:",
+        insertResult.error
+    );
+
+} else {
+
+    console.log(
+        "Insert Success"
+    );
+}
+                
             }
 
             authMessage.style.color =
