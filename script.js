@@ -290,7 +290,7 @@ authSubmitBtn.addEventListener(
                         {
 
 
-                            Username:
+                            username:
                                 username,
 
                             Email:
