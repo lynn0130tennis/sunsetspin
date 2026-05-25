@@ -323,7 +323,7 @@ if (tournamentForm) {
         const username = document.getElementById("reg-username").value;
         const tournament = document.getElementById("tournament").value;
         const division = document.getElementById("division").value;
- const compete_level = document.getElementById("Level").value;
+ const compete_level = document.getElementById("level").value;
         
 
         if (!username || !tournament || !division) {
