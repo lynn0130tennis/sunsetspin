@@ -135,87 +135,131 @@ const usta = authUsta?.value || null;
     // SIGN UP
     // --------------------
 
-    if (authMode === "signup") {
+   // --------------------
+// SIGN UP
+// --------------------
 
-        if (!username || !email || !password || !phone) {
-            authMessage.innerText = "Please fill all fields.";
-            return;
-        }
+if (authMode === "signup") {
 
+    if (!username || !email || !password || !phone) {
 
+        authMessage.innerText =
+            "Please fill all fields.";
 
-const { data, error } = await client.auth.signUp({
-    email,
-    password,
-    options: {
-        data: {
-            username: username
-        }
+        return;
     }
-});
 
-if (error) {
-    authMessage.innerText = error.message;
-await fetch(
-  "https://uppzqygxtpoifkaddoyi.supabase.co/send-welcome-email",
-  {
-    method: "POST",
+    // SIGN UP AUTH
+    const { data, error } =
+        await client.auth.signUp({
 
-    headers: {
-      "Content-Type": "application/json"
-    },
+            email,
+            password,
 
-    body: JSON.stringify({
-      email: email,
-      username: username
-    })
-  }
-);
-    
-    return;
-}
+            options: {
+                data: {
+                    username: username
+                }
+            }
+        });
 
-// IMPORTANT: get user from signup result
-const user = data?.user;
+    // AUTH ERROR
+    if (error) {
 
-const { data: insertData, error: insertError } =
-    await client.from("Registration").insert([
-        {
-            username,
-            email: user?.email || email,
-            phone,
-            gender,
-            usta,
-            created_at: new Date().toISOString()
-        }
-    ]);
+        authMessage.style.color = "red";
+        authMessage.innerText = error.message;
 
-console.log("INSERT RESULT:", { insertData, insertError });
-
-if (insertError) {
-    authMessage.style.color = "red";
-    authMessage.innerText = insertError.message;
-    return;
-}
-
-authMessage.style.color = "green";
-authMessage.innerText = "Account created!";
-
-await fetch("https://https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        email: email,
-        username: username
-    })
-});
-
-        
-        setTimeout(() => {
-            closeAuthModal();
-            updateUI();
-        }, 800);
+        return;
     }
+
+    // USER
+    const user = data?.user;
+
+    // INSERT INTO REGISTRATION TABLE
+    const {
+        data: insertData,
+        error: insertError
+
+    } = await client
+        .from("Registration")
+        .insert([
+            {
+                username,
+                email: user?.email || email,
+                phone,
+                gender,
+                usta,
+                created_at:
+                    new Date().toISOString()
+            }
+        ]);
+
+    console.log(
+        "INSERT RESULT:",
+        insertData,
+        insertError
+    );
+
+    // INSERT ERROR
+    if (insertError) {
+
+        authMessage.style.color = "red";
+        authMessage.innerText =
+            insertError.message;
+
+        return;
+    }
+
+    // SEND WELCOME EMAIL
+    try {
+
+        const response = await fetch(
+            "https://uppzqygxtpoifkaddoyi.functions.supabase.co/send-welcome-email",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    email,
+                    username
+                })
+            }
+        );
+
+        const emailResult =
+            await response.json();
+
+        console.log(
+            "EMAIL RESULT:",
+            emailResult
+        );
+
+    } catch (emailError) {
+
+        console.log(
+            "EMAIL ERROR:",
+            emailError
+        );
+    }
+
+    // SUCCESS
+    authMessage.style.color = "green";
+
+    authMessage.innerText =
+        "Account created successfully! 🎾";
+
+    setTimeout(() => {
+
+        closeAuthModal();
+
+        updateUI();
+
+    }, 800);
+}
 
     // --------------------
     // SIGN IN
