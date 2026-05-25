@@ -408,7 +408,7 @@ async function updateUI() {
 
     } else {
 
-        userStatus.innerText = "Not signed in";
+        userStatus.innerText = "";
 
         signinBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
