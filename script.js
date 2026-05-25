@@ -8,6 +8,7 @@ console.log("SCRIPT LOADED");
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
+
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --------------------
@@ -35,6 +36,8 @@ const authSubmitBtn = document.getElementById("auth-submit-btn");
 const authMessage = document.getElementById("auth-message");
 const closeModal = document.getElementById("close-modal");
 
+const regUsernameField = document.getElementById("reg-username");
+
 // --------------------
 // AUTH MODE
 // --------------------
@@ -42,7 +45,7 @@ const closeModal = document.getElementById("close-modal");
 let authMode = "signin";
 
 // --------------------
-// PHONE FORMAT (XXX-XXX-XXXX)
+// PHONE FORMAT
 // --------------------
 
 if (authPhone) {
@@ -69,10 +72,10 @@ function openModal(mode) {
     authModal.style.display = "block";
     authMessage.innerText = "";
 
-    authEmail.value = "";
-    authPassword.value = "";
-    authUsername.value = "";
-    authPhone.value = "";
+    if (authEmail) authEmail.value = "";
+    if (authPassword) authPassword.value = "";
+    if (authUsername) authUsername.value = "";
+    if (authPhone) authPhone.value = "";
 
     if (mode === "signup") {
         authTitle.innerText = "Create Account";
@@ -80,6 +83,7 @@ function openModal(mode) {
         authUsername.style.display = "block";
         authPhone.style.display = "block";
         authEmail.style.display = "block";
+
     } else {
         authTitle.innerText = "Sign In";
 
@@ -134,7 +138,9 @@ authSubmitBtn.addEventListener("click", async (e) => {
             email,
             password,
             options: {
-                data: { username, phone }
+                data: {
+                    username: username
+                }
             }
         });
 
@@ -162,7 +168,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
     }
 
     // --------------------
-    // SIGN IN (USERNAME → EMAIL LOOKUP)
+    // SIGN IN
     // --------------------
 
     else {
@@ -214,7 +220,7 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 // --------------------
-// UI UPDATE (FIXED - NO "NOT SIGNED IN")
+// UI UPDATE (FIXED AUTO-FILL)
 // --------------------
 
 async function updateUI() {
@@ -222,13 +228,21 @@ async function updateUI() {
     const { data: { session } } =
         await client.auth.getSession();
 
+    const regUsernameField = document.getElementById("reg-username");
+
     if (session) {
 
         const username =
             session.user.user_metadata?.username ||
             session.user.email;
 
+        // HEADER
         userStatus.textContent = username;
+
+        // AUTO FILL FORM (FIXED)
+        if (regUsernameField) {
+            regUsernameField.value = username;
+        }
 
         signinBtn.style.display = "none";
         signupBtn.style.display = "none";
@@ -239,8 +253,11 @@ async function updateUI() {
 
     } else {
 
-        // IMPORTANT: empty only
         userStatus.textContent = "";
+
+        if (regUsernameField) {
+            regUsernameField.value = "";
+        }
 
         signinBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
@@ -252,12 +269,17 @@ async function updateUI() {
 }
 
 // --------------------
+// SAFE INIT (IMPORTANT FIX)
+// --------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+    updateUI();
+});
+
+// --------------------
 // SESSION LISTENER
 // --------------------
 
 client.auth.onAuthStateChange(() => {
     updateUI();
 });
-
-// INIT
-updateUI();
