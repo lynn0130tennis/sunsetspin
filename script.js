@@ -175,7 +175,7 @@ authSubmitBtn.addEventListener(
             .insert([
                 {
                     User_id: user.id,
-                    Email: user.email
+                    Email: user.email || email
                 }
             ]);
 
