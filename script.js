@@ -157,15 +157,17 @@ const usta = authUsta?.value || "";
             return;
         }
 
-        await client.from("Registration").insert([
-            {
-                username,
-                email,
-                phone,
-                 gender,
-                 usta,
-                created_at: new Date().toISOString()
-            }
+ const { data: insertData, error: insertError } =
+    await client.from("Registration").insert([
+        {
+            username,
+            email: user.email || email,
+            phone,
+            gender: authGender?.value || null,
+            usta: authUsta?.value || null,
+            created_at: new Date().toISOString()
+        }
+    ]);
         ]);
 
         authMessage.style.color = "green";
