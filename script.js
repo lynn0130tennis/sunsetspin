@@ -212,20 +212,29 @@ if (authMode === "signup") {
 // SEND WELCOME EMAIL
 try {
 
+// Ensure SUPABASE_KEY is your public 'anon' key
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM"; 
+
 const response = await fetch(
   "https://uppzqygxtpoifkaddoyi.supabase.co/functions/v1/send-welcome-email",
   {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      // 1. Tell the API Gateway your public key
+      "apikey": SUPABASE_KEY,
+      // 2. Pass it as a Bearer token so the Edge Function platform can verify it
       "Authorization": `Bearer ${SUPABASE_KEY}`
     },
     body: JSON.stringify({
-      email,
-      username
+      email: "user@example.com",
+      username: "JohnDoe"
     })
   }
 );
+
+const data = await response.json();
+console.log(data);
 
     const result = await response.json();
 
