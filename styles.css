@@ -796,18 +796,18 @@ button:hover {
 }
 
 .site-footer {
-    background:  linear-gradient(135deg, #f39c12 0%, #e67e22 100%)
+    background:  linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
     color: white;
     padding: 60px 20px 20px;
     margin-top: 80px;
 }
 
 .footer-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
-    max-width: 1100px;
-    margin: auto;
+   display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .site-footer h3,
