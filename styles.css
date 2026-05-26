@@ -796,7 +796,7 @@ button:hover {
 }
 
 .site-footer {
-    background: ##f39c12;
+    background:  linear-gradient(135deg, #f39c12 0%, #e67e22 100%)
     color: white;
     padding: 60px 20px 20px;
     margin-top: 80px;
