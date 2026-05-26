@@ -225,7 +225,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
 
         setTimeout(() => {
             closeAuthModal();
-            updateUI();
+            ;
         }, 800);
 
     // --------------------
@@ -264,7 +264,7 @@ authSubmitBtn.addEventListener("click", async (e) => {
 
         setTimeout(() => {
             closeAuthModal();
-            updateUI();
+            ;
         }, 500);
     }
 });
@@ -275,14 +275,12 @@ authSubmitBtn.addEventListener("click", async (e) => {
 
 logoutBtn.addEventListener("click", async () => {
     await client.auth.signOut();
-    updateUI();
+    ;
 });
 
 // --------------------
 // UI UPDATE
 // --------------------
-
-
 
 async function updateUI() {
     const { data: { session } } = await client.auth.getSession();
@@ -291,17 +289,15 @@ async function updateUI() {
     if (session) {
         const username = session.user.user_metadata?.username || session.user.email;
 
-        userStatus.textContent = username;
+        // This stays the same — it injects the username into your new link tag
+        userStatus.textContent = username; 
 
         if (regUsernameField) {
             regUsernameField.value = username;
         }
 
-        // SHOW the Profile link and Logout button when signed in
-        if (profileLink) profileLink.style.display = "inline-block";
+        // Keep your toggle rules clean
         logoutBtn.style.display = "inline-block";
-        
-        // HIDE the entry buttons
         signinBtn.style.display = "none";
         signupBtn.style.display = "none";
 
@@ -309,17 +305,14 @@ async function updateUI() {
         loginMessage.style.display = "none";
 
     } else {
+        // Clear the link text when they log out
         userStatus.textContent = "";
 
         if (regUsernameField) {
             regUsernameField.value = "";
         }
 
-        // HIDE the Profile link and Logout button when signed out
-        if (profileLink) profileLink.style.display = "none";
         logoutBtn.style.display = "none";
-        
-        // SHOW the entry buttons
         signinBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
 
