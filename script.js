@@ -18,7 +18,7 @@ const signupBtn = document.getElementById("signup-btn");
 const logoutBtn = document.getElementById("logout-btn");
 
 const userStatus = document.getElementById("user-status");
-
+const profileLink = document.getElementById("profile-link");
 const registrationContainer = document.getElementById("registration-form-container");
 const loginMessage = document.getElementById("login-message");
 
@@ -282,6 +282,8 @@ logoutBtn.addEventListener("click", async () => {
 // UI UPDATE
 // --------------------
 
+
+
 async function updateUI() {
     const { data: { session } } = await client.auth.getSession();
     const regUsernameField = document.getElementById("reg-username");
@@ -295,9 +297,13 @@ async function updateUI() {
             regUsernameField.value = username;
         }
 
+        // SHOW the Profile link and Logout button when signed in
+        if (profileLink) profileLink.style.display = "inline-block";
+        logoutBtn.style.display = "inline-block";
+        
+        // HIDE the entry buttons
         signinBtn.style.display = "none";
         signupBtn.style.display = "none";
-        logoutBtn.style.display = "inline-block";
 
         registrationContainer.style.display = "block";
         loginMessage.style.display = "none";
@@ -309,9 +315,13 @@ async function updateUI() {
             regUsernameField.value = "";
         }
 
+        // HIDE the Profile link and Logout button when signed out
+        if (profileLink) profileLink.style.display = "none";
+        logoutBtn.style.display = "none";
+        
+        // SHOW the entry buttons
         signinBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
-        logoutBtn.style.display = "none";
 
         registrationContainer.style.display = "none";
         loginMessage.style.display = "block";
