@@ -26,8 +26,9 @@ function showBanner(text, isSuccess = true) {
 async function loadUserProfile() {
     const { data: { session }, error: sessionErr } = await client.auth.getSession();
     
+    // SECURITY AUTO-REDIRECT: If no session exists, kick them back to the main courts page
     if (sessionErr || !session) {
-        showBanner("Authentication error. Please log in again.", false);
+        window.location.href = "index.html";
         return;
     }
     
