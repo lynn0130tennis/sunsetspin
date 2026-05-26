@@ -66,12 +66,17 @@ if (authPhone) {
 // MODAL
 // --------------------
 
+// --------------------
+// MODAL MANAGEMENT (FORCED OVERRIDE)
+// --------------------
+
 function openModal(mode) {
     authMode = mode;
 
     authModal.style.display = "block";
     authMessage.innerText = "";
 
+    // Safely clear out any stale user entry data
     if (authEmail) authEmail.value = "";
     if (authPassword) authPassword.value = "";
     if (authUsername) authUsername.value = "";
@@ -81,14 +86,21 @@ function openModal(mode) {
 
     if (mode === "signup") {
         authTitle.innerText = "Create Account";
-        authUsername.style.display = "block";
-        authPhone.style.display = "block";
-        authEmail.style.display = "block";
+        
+        // Show ALL registration fields
+        if (authEmail) authEmail.style.display = "block";
+        if (authPhone) authPhone.style.display = "block";
+        if (authGender) authGender.style.display = "block";
+        if (authUsta) authUsta.style.display = "block";
+
     } else {
         authTitle.innerText = "Sign In";
-        authUsername.style.display = "block";
-        authPhone.style.display = "none";
-        authEmail.style.display = "none";
+        
+        // Force-hide Email, Phone, Gender, and USTA completely on Sign In
+        if (authEmail) authEmail.style.display = "none";
+        if (authPhone) authPhone.style.display = "none";
+        if (authGender) authGender.style.display = "none";
+        if (authUsta) authUsta.style.display = "none";
     }
 }
 
