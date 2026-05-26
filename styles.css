@@ -840,3 +840,180 @@ button:hover {
     color: #94a3b8;
     font-size: 14px;
 }
+
+
+/* -----------------------------------------
+   PROFESSIONAL USER PROFILE DASHBOARD
+----------------------------------------- */
+.profile-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Left Sidebar Card */
+.profile-sidebar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    height: fit-content;
+}
+
+.avatar-container {
+    margin-bottom: 15px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: #f1f5f9;
+    font-size: 36px;
+    line-height: 80px;
+    border-radius: 50%;
+    margin: 0 auto;
+    border: 2px solid #cbd5e1;
+}
+
+.profile-sidebar h2 {
+    font-size: 20px;
+    color: #1e293b;
+    margin: 10px 0 5px 0;
+}
+
+.sidebar-subtext {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+.badge {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Right Content Panel & Settings Cards */
+.profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.settings-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.settings-card h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #1e293b;
+    font-size: 18px;
+}
+
+.section-desc {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+/* Dynamic Forms Formatting */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.max-w-md {
+    max-width: 400px;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #334155;
+    background-color: #fff;
+    transition: border-color 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Custom Buttons Styling */
+.btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.btn-primary {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background: #0f172a;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Alert Notification Banner */
+.message-banner {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive Grid Rules */
+@media (max-width: 768px) {
+    .profile-container {
+        grid-template-columns: 1fr;
+    }
+}
