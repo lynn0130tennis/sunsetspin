@@ -1017,3 +1017,7 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+#user-status:hover {
+    color: #3b82f6; /* Adjust this to match your site's theme color! */
+    text-decoration: underline;
+}
