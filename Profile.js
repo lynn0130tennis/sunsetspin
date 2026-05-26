@@ -24,35 +24,61 @@ function showBanner(text, isSuccess = true) {
 
 // 1. Initial Load: Fetch User Metadata & Profile Values
 async function loadUserProfile() {
+    console.log("Profile page loading, checking session...");
+    
     const { data: { session }, error: sessionErr } = await client.auth.getSession();
     
-    // SECURITY AUTO-REDIRECT: If no session exists, kick them back to the main courts page
+    // Security check: If no session exists, send them back to the home page
     if (sessionErr || !session) {
+        console.error("No active session found:", sessionErr);
         window.location.href = "index.html";
         return;
     }
     
     currentUserSession = session.user;
+    console.log("Logged in user:", currentUserSession.email);
     
-    // Fill basic details into sidebar
+    // Populate the sidebar panel immediately using auth data
     const metadataUsername = currentUserSession.user_metadata?.username || "Tennis Player";
     document.getElementById("sidebar-username").innerText = metadataUsername;
     document.getElementById("sidebar-email").innerText = currentUserSession.email;
 
-    // Fetch existing metrics from custom 'Registration' table
+    // FETCH REGISTERED INFO: Query the 'Registration' table matching the user's email
     const { data: profileRow, error: dbErr } = await client
         .from("Registration")
-        .select("phone, gender, usta")
+        .select("*") // Pull all rows to guarantee we hit the correct column names
         .eq("email", currentUserSession.email)
         .maybeSingle();
 
+    if (dbErr) {
+        console.error("Error fetching data from Registration table:", dbErr);
+        showBanner(`Could not load profile data: ${dbErr.message}`, false);
+        return;
+    }
+
     if (profileRow) {
-        if (profileRow.phone) document.getElementById("profile-phone").value = profileRow.phone;
-        if (profileRow.gender) document.getElementById("profile-gender").value = profileRow.gender;
-        if (profileRow.usta) {
-            document.getElementById("profile-usta-select").value = profileRow.usta;
-            document.getElementById("sidebar-usta").innerText = `USTA ${profileRow.usta}`;
+        console.log("Successfully retrieved registration record:", profileRow);
+        
+        // Populate Phone (handles standard field or custom 'phone_number' variations)
+        const userPhone = profileRow.phone || profileRow.phone_number || "";
+        document.getElementById("profile-phone").value = userPhone;
+        
+        // Populate Gender (capitalizes the check to match database inputs)
+        const userGender = profileRow.gender || "";
+        document.getElementById("profile-gender").value = userGender;
+        
+        // Populate USTA Rating dropdown & update the decorative sidebar badge
+        // (Supports lowercase 'usta' or uppercase 'USTA' database keys)
+        const userUsta = profileRow.usta || profileRow.USTA || "";
+        if (userUsta) {
+            document.getElementById("profile-usta-select").value = userUsta;
+            document.getElementById("sidebar-usta").innerText = `USTA ${userUsta}`;
+            document.getElementById("sidebar-usta").style.display = "inline-block";
+        } else {
+            document.getElementById("sidebar-usta").innerText = "USTA --";
         }
+    } else {
+        console.warn("No matching row found in Registration table for this email.");
     }
 }
 
