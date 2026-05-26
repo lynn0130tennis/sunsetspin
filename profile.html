@@ -3,247 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Settings - Sunset Spin Invitational</title>
+    <title>Player Dashboard - Sunset Spin Invitational</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
-        /* PROFILE SPECIFIC COMPATIBILITY THEME OVERRIDES */
+        /* DASHBOARD DESIGN LANGUAGE MATCHING INDEX.HTML */
         body {
-            background-color: #f8fafc; /* Matches light sections */
+            background-color: #f4f6f4;
             margin: 0;
             padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         
-        .profile-page-wrapper {
-            padding: 60px 0;
+        .dashboard-wrapper {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        .profile-grid {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 40px;
-            align-items: start;
+            grid-template-columns: 280px 1fr;
+            gap: 35px;
+            margin-top: 20px;
         }
 
-        /* Sidebar Styling matching Tournament Cards */
-        .profile-sidebar {
+        /* Sidebar Profile & Nav Controls */
+        .dashboard-sidebar {
             background: #ffffff;
-            border-top: 5px solid #1a2e1a; /* Matches header theme accent */
+            border-top: 5px solid #1a2e1a;
             border-radius: 8px;
-            padding: 30px 20px;
+            padding: 25px 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .profile-avatar-zone {
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
         }
 
         .profile-avatar {
-            width: 90px;
-            height: 90px;
-            background: #f1f5f9;
-            font-size: 42px;
-            line-height: 90px;
+            width: 85px;
+            height: 85px;
+            background: #eef2ed;
+            font-size: 40px;
+            line-height: 85px;
             border-radius: 50%;
-            margin: 0 auto 20px auto;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            margin: 0 auto 12px auto;
+            border: 2px solid #cbd5e1;
         }
 
-        .profile-sidebar h2 {
-            font-size: 22px;
+        .profile-avatar-zone h2 {
+            font-size: 20px;
             color: #1a2e1a;
-            margin: 10px 0;
+            margin: 5px 0;
         }
 
-        .sidebar-subtext {
-            font-size: 14px;
+        .profile-avatar-zone p {
+            font-size: 13px;
             color: #666;
-            margin-bottom: 25px;
+            margin: 0 0 15px 0;
         }
 
-        /* Form Card Structure styled like Registration section */
-        .settings-card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 35px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid #eee;
+        .nav-menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0 0 0;
+            border-top: 1px solid #eef2ed;
         }
 
-        .settings-card h3 {
-            margin-top: 0;
-            font-size: 22px;
-            color: #1a2e1a;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 10px;
-        }
-
-        .section-desc {
+        .nav-menu-item a {
+            display: block;
+            padding: 12px 15px;
+            color: #444;
+            text-decoration: none;
+            font-weight: 500;
             font-size: 14px;
-            color: #666;
-            margin-bottom: 25px;
+            border-radius: 4px;
+            margin-top: 5px;
+            transition: all 0.2s ease;
         }
 
-        /* Standardized Row Inputs from index.html */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
+        .nav-menu-item a:hover, .nav-menu-item.active a {
+            background: #1a2e1a;
+            color: #ffffff;
         }
 
-        .form-group {
+        /* Main Content Cards & Tables */
+        .dashboard-content-panel {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 30px;
         }
 
-        .form-group label {
-            font-size: 14px;
+        .dashboard-section-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #eaeaea;
+        }
+
+        .dashboard-section-card h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #1a2e1a;
+            border-bottom: 2px solid #f4f6f4;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Tournament Listing Layout Blocks */
+        .tournament-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tournament-status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: #fdfdfd;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #1a2e1a;
+            border-radius: 6px;
+            transition: transform 0.15s ease;
+        }
+
+        .tournament-status-row:hover {
+            transform: translateX(4px);
+        }
+
+        .t-info-meta h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #1a2e1a;
+        }
+
+        .t-info-meta p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Status & Results Tags */
+        .status-pill {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .pill-registered { background: #e0f2fe; color: #0369a1; }
+        .pill-champion { background: #fef3c7; color: #d97706; border: 1px solid #f59e0b; }
+        .pill-completed { background: #f1f5f9; color: #475569; }
+
+        /* Standardized Grid Inputs */
+        .form-grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-box-wrapper label {
+            font-size: 13px;
             font-weight: 600;
             color: #1a2e1a;
         }
 
-        .form-group input,
-        .form-group select {
-            padding: 12px;
-            border: 1px solid #ccc;
+        .input-box-wrapper input, .input-box-wrapper select {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
-            font-size: 15px;
-            background-color: #fff;
-            transition: all 0.2s ease;
+            font-size: 14px;
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #1a2e1a;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 46, 26, 0.1);
-        }
-
-        /* Theme Buttons matching 'Register Now' */
-        .btn-theme-back {
+        /* Themes Utility Buttons */
+        .btn-action-back {
             display: inline-flex;
             align-items: center;
             background: #ffffff;
             color: #1a2e1a;
             text-decoration: none;
             border: 2px solid #1a2e1a;
-            padding: 10px 20px;
+            padding: 8px 16px;
             font-weight: bold;
             border-radius: 4px;
-            transition: all 0.2s ease;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
-        .btn-theme-back:hover {
-            background: #f1f5f9;
-        }
-
-        .btn-theme-submit {
+        .btn-theme-green {
             background: #1a2e1a;
-            color: #fff;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
+            color: white;
             border: none;
+            padding: 12px 24px;
+            font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
-            transition: background 0.2s ease;
         }
 
-        .btn-theme-submit:hover {
-            background: #2c4c2c;
-        }
+        .btn-theme-green:hover { background: #233d23; }
 
-        .btn-theme-danger {
-            background: #d32f2f;
-            color: #fff;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .btn-theme-danger:hover {
-            background: #b71c1c;
-        }
-
-        .max-w-md {
-            max-width: 450px;
-        }
-
-        @media (max-width: 768px) {
-            .profile-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 850px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
+<!-- HEADER BRANDING PANEL -->
 <header class="header">
     <div class="container">
         <div class="logo">
-          
-            <h1> 🎾 Sunset Spin Invitational</h1>
-            <p class="tagline">Tennis Tournament & Events</p>
+            <h1>静态 🎾 Sunset Spin Invitational</h1>
+            <p class="tagline">Player Portal Hub</p>
         </div>
-        <nav class="nav">
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="index.html#tournaments">Tournaments</a></li>
-                <li><a href="index.html#register">Register</a></li>
-            </ul>
-        </nav>
     </div>
 </header>
 
-<div class="container profile-page-wrapper">
+<div class="dashboard-wrapper">
     
-    <a href="index.html" class="btn-theme-back">
-        ← Return to Tournament Board
-    </a>
+    <a href="index.html" class="btn-action-back">← Back to Tournament Board</a>
+    <div id="dashboard-msg-banner" style="display:none; padding:15px; margin-bottom:20px; border-radius:4px;"></div>
 
-    <div id="profile-msg" class="message-banner" style="display: none; padding: 15px; margin-bottom: 25px; border-radius: 4px;"></div>
-
-    <div class="profile-grid">
+    <div class="dashboard-grid">
         
-        <aside class="profile-sidebar">
-            <div class="avatar-container">
+        <!-- SIDEBAR CONTAINER PANEL -->
+        <aside class="dashboard-sidebar">
+            <div class="profile-avatar-zone">
                 <div class="profile-avatar">🎾</div>
+                <h2 id="lbl-sidebar-name">Loading...</h2>
+                <p id="lbl-sidebar-email">...</p>
+                <span class="status-pill pill-registered" id="badge-sidebar-usta">USTA --</span>
             </div>
-            <h2 id="sidebar-username">Loading...</h2>
-            <p id="sidebar-email" class="sidebar-subtext">...</p>
-            <span class="badge" id="sidebar-usta" style="background: #1a2e1a; color: white; padding: 6px 16px; border-radius: 4px; font-weight: bold;">USTA --</span>
+            
+            <ul class="nav-menu-list">
+                <li class="nav-menu-item active"><a href="#section-personal">Personal Details</a></li>
+                <li class="nav-menu-item"><a href="#section-upcoming">Upcoming Events</a></li>
+                <li class="nav-menu-item"><a href="#section-history">Match History</a></li>
+            </ul>
         </aside>
 
-        <main class="profile-content">
+        <!-- MAIN DASHBOARD CONTENT DISPLAY -->
+        <main class="dashboard-content-panel">
             
-            <section class="settings-card">
-                <h3>Personal Information</h3>
-                <p class="section-desc">Update your contact information and tennis profile metrics.</p>
-                
-                <form id="personal-info-form">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="text" id="profile-phone" placeholder="123-456-7890" maxlength="12">
+            <!-- SECTION 1: PERSONAL DETAILS PROFILE MANAGEMENT -->
+            <section class="dashboard-section-card" id="section-personal">
+                <h3>Personal Information & Settings</h3>
+                <form id="frm-dashboard-profile">
+                    <div class="form-grid-layout">
+                        <div class="input-box-wrapper">
+                            <label>Contact Phone Number</label>
+                            <input type="text" id="txt-dash-phone" placeholder="123-456-7890">
                         </div>
-                        <div class="form-group">
-                            <label>Gender</label>
-                            <select id="profile-gender">
+                        <div class="input-box-wrapper">
+                            <label>Gender Classification</label>
+                            <select id="sel-dash-gender">
                                 <option value="">Select Gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label>USTA Rating</label>
-                            <select id="profile-usta-select">
+                        <div class="input-box-wrapper">
+                            <label>USTA Playing Level Rating</label>
+                            <select id="sel-dash-usta">
                                 <option value="">Select Rating</option>
-                                <option value="2.5">2.5</option>
                                 <option value="3.0">3.0</option>
                                 <option value="3.5">3.5</option>
                                 <option value="4.0">4.0</option>
@@ -252,36 +287,43 @@
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn-theme-submit">Save Personal Info</button>
+                    <button type="submit" class="btn-theme-green">Save Profile Changes</button>
                 </form>
             </section>
 
-            <section class="settings-card">
-                <h3>Security & Password</h3>
-                <p class="section-desc">Change your password to keep your account secure.</p>
-                
-                <form id="password-change-form">
-                    <div class="form-group max-w-md" style="margin-bottom: 20px;">
-                        <label>New Password</label>
-                        <input type="password" id="new-password" placeholder="Minimum 6 characters" required>
+            <!-- SECTION 2: PLAYER'S SIGNED-UP UPCOMING TOURNAMENTS -->
+            <section class="dashboard-section-card" id="section-upcoming">
+                <h3>Your Registered Upcoming Events</h3>
+                <div class="tournament-list-container" id="container-upcoming-events">
+                    <!-- Dynamic Loading Placeholder row -->
+                    <div class="tournament-status-row">
+                        <div class="t-info-meta">
+                            <h4>Loading Registered Rosters...</h4>
+                            <p>Querying verified scheduled court allocations.</p>
+                        </div>
+                        <span class="status-pill pill-registered">Processing</span>
                     </div>
-                    <div class="form-group max-w-md" style="margin-bottom: 25px;">
-                        <label>Confirm New Password</label>
-                        <input type="password" id="confirm-password" placeholder="Repeat new password" required>
+                </div>
+            </section>
+
+            <!-- SECTION 3: COMPLETED TOURNAMENTS WITH STATS AND RESULTS -->
+            <section class="dashboard-section-card" id="section-history">
+                <h3>Completed Tournament Placements & History</h3>
+                <div class="tournament-list-container" id="container-past-events">
+                    <!-- Dynamic Loading Placeholder row -->
+                    <div class="tournament-status-row" style="border-left-color: #475569;">
+                        <div class="t-info-meta">
+                            <h4>Loading Historic Match Matrix...</h4>
+                            <p>Compiling historical score results data lines.</p>
+                        </div>
+                        <span class="status-pill pill-completed">Archived</span>
                     </div>
-                    <button type="submit" class="btn-theme-danger">Update Password</button>
-                </form>
+                </div>
             </section>
 
         </main>
     </div>
 </div>
-
-<footer class="footer">
-    <div class="container">
-        <p>&copy; 2026 Sunset Spin Invitational</p>
-    </div>
-</footer>
 
 <script src="profile.js" defer></script>
 </body>
