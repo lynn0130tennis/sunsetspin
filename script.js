@@ -254,7 +254,7 @@ document.addEventListener("DOMContentLoaded", updateUI);
 client.auth.onAuthStateChange(() => { updateUI(); });
 
 // --------------------
-// TOURNAMENT FORM DISPATCH LOGIC (ROUTING FIXED)
+// TOURNAMENT FORM DISPATCH LOGIC (WITH DUPLICATE VALIDATION CHECK)
 // --------------------
 const tournamentForm = document.getElementById("tournament-form");
 const formMessage = document.getElementById("form-message");
@@ -281,7 +281,26 @@ if (tournamentForm) {
             return;
         }
 
-        // FIXED: Now targets the tournament log table with correct database schema columns
+        // 1. CHRONOLOGICAL DUPLICATE REGISTRATION VERIFICATION GUARD
+        const { data: existingReg, error: checkError } = await client
+            .from("tournament_regi")
+            .select("id")
+            .eq("username", username)
+            .eq("tournament_code", tournament)
+            .maybeSingle();
+
+        if (checkError) {
+            console.error("Validation verification error:", checkError);
+        }
+
+        // 2. TRIGGER ALERT WINDOW IF PRE-EXISTING ENTRY SELECTION IS NOT NULL
+        if (existingReg) {
+            formMessage.style.color = "orange";
+            formMessage.innerText = "You've already registered for this event!";
+            return;
+        }
+
+        // 3. EXECUTE SAFE INSERTION SINCE ACCOUNT UNIQUE SUBMISSION PASSES
         const { error } = await client
             .from("tournament_regi") 
             .insert([{
