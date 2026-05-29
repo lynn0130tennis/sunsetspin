@@ -239,6 +239,7 @@ async function updateUI() {
             displayUsername = session.user.email.split("@")[0];
         }
 
+        // Apply string safely to layout headers
         if (userStatus) userStatus.textContent = displayUsername; 
         if (regUsernameField) regUsernameField.value = displayUsername;
 
@@ -248,7 +249,10 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
 
-        loadRegisteredEvents(displayUsername);
+        // CRASH PREVENTER: Only triggers if the profile template loader code is accessible on this page context
+        if (typeof loadRegisteredEvents === "function") {
+            loadRegisteredEvents(displayUsername);
+        }
 
     } else {
         if (userStatus) userStatus.textContent = "";
@@ -331,7 +335,17 @@ if (tournamentForm) {
         
         if (regUsernameField) regUsernameField.value = username;
         
-        loadRegisteredEvents(username);
+        if (typeof loadRegisteredEvents === "function") {
+            loadRegisteredEvents(username);
+        }
     });
 }
+
+// --------------------
+// APPLICATION INITIALIZATION LIFECYCLE
+// --------------------
+window.onload = () => {
+    updateUI();
+    client.auth.onAuthStateChange(() => { updateUI(); });
+};
 
