@@ -344,80 +344,98 @@ if (tournamentForm) {
 }
 
 // --------------------
-// PROFILE DASHBOARD DATA RENDERER
+// PROFILE DASHBOARD DATA RENDERER (DIAGNOSTIC EDITION)
 // --------------------
 async function loadRegisteredEvents(username) {
+    console.log("DEBUG: loadRegisteredEvents triggered for username:", username);
+
     const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     const noEventsRow = document.getElementById("no-events-row");
 
-    // Guard clause: stop execution if this target area is not available on the current page
-    if (!dynamicWrapper) return;
+    // Diagnostic Check 1: Is the HTML target actually found?
+    if (!dynamicWrapper) {
+        console.error("DEBUG ERROR: Cannot find HTML element with id='dynamic-events-wrapper'. Make sure it's inside your profile.html section!");
+        return;
+    }
 
-    // Show processing row
+    // Show processing state visually
     dynamicWrapper.innerHTML = `
         <div class="tournament-status-row" id="loading-events-row">
             <div class="t-info-meta">
                 <h4>Loading Registered Rosters...</h4>
-                <p>Querying verified scheduled court allocations.</p>
+                <p>Querying verified scheduled court allocations (Checking: ${username}).</p>
             </div>
             <span class="status-pill pill-registered" style="background: #3b82f6; color: #fff;">Processing</span>
         </div>
     `;
     if (noEventsRow) noEventsRow.style.display = "none";
 
-    const cleanUsername = username.trim();
+    try {
+        const cleanUsername = username.trim();
+        console.log("DEBUG: Fetching from table 'tournament_regi' where username =", cleanUsername);
 
-    const { data: registrations, error } = await client
-        .from("tournament_regi")
-        .select("tournament_code, division, compete_level")
-        .eq("username", cleanUsername);
+        // Fetch row data
+        const { data: registrations, error } = await client
+            .from("tournament_regi")
+            .select("tournament_code, division, compete_level")
+            .eq("username", cleanUsername);
 
-    dynamicWrapper.innerHTML = "";
+        if (error) {
+            console.error("DEBUG ERROR: Supabase query failed completely:", error);
+            dynamicWrapper.innerHTML = `<div class="tournament-status-row"><p style="color:red;">Database Error: ${error.message}</p></div>`;
+            return;
+        }
 
-    if (error) {
-        console.error("Error retrieving tournament data:", error);
-        dynamicWrapper.innerHTML = `
-            <div class="tournament-status-row">
-                <div class="t-info-meta">
-                    <h4 style="color: red;">Failed to Load Rosters</h4>
-                    <p>${error.message}</p>
-                </div>
-            </div>
-        `;
-        return;
+        console.log("DEBUG: Database returned rows successfully. Data found:", registrations);
+
+        // Wipe processing visual
+        dynamicWrapper.innerHTML = "";
+
+        // Diagnostic Check 2: If array returned clean, run a fallback query using the logged-in email address
+        if (!registrations || registrations.length === 0) {
+            console.warn(`DEBUG WARNING: 0 events found matching exact string '${cleanUsername}'. Trying secondary email backup check...`);
+            
+            const { data: { session } } = await client.auth.getSession();
+            if (session?.user?.email) {
+                console.log("DEBUG: Attempting lookup using account email:", session.user.email);
+                const { data: emailRegs } = await client
+                    .from("tournament_regi")
+                    .select("tournament_code, division, compete_level")
+                    .eq("username", session.user.email);
+
+                if (emailRegs && emailRegs.length > 0) {
+                    console.log("DEBUG SUCCESS: Found entries saved under email instead! Rendering now...");
+                    renderRows(emailRegs, dynamicWrapper);
+                    return;
+                }
+            }
+
+            // If truly empty across both fields, open the structural fallback panel
+            console.log("DEBUG: No records found for username or email. Displaying empty state.");
+            if (noEventsRow) noEventsRow.style.display = "flex";
+            return;
+        }
+
+        // Standard happy path render loop
+        renderRows(registrations, dynamicWrapper);
+
+    } catch (catchErr) {
+        console.error("DEBUG CRITICAL EXCEPTION: An unexpected page script crash blocked execution:", catchErr);
     }
+}
 
-    if (!registrations || registrations.length === 0) {
-        if (noEventsRow) noEventsRow.style.display = "flex";
-        return;
-    }
-
-    registrations.forEach(event => {
+// Helper block to append dynamic status cards cleanly
+function renderRows(items, wrapperElement) {
+    items.forEach(event => {
         const row = document.createElement("div");
         row.className = "tournament-status-row";
-
         row.innerHTML = `
             <div class="t-info-meta">
                 <h4>${escapeHTML(event.tournament_code)}</h4>
                 <p>Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
             </div>
-            <span class="status-pill pill-registered">Registered</span>
+            <span class="status-pill pill-registered" style="background: #15803d; color: #fff;">Registered</span>
         `;
-        
-        dynamicWrapper.appendChild(row);
+        wrapperElement.appendChild(row);
     });
 }
-
-function escapeHTML(str) {
-    if (!str) return '';
-    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-}
-
-// --------------------
-// APPLICATION INITIALIZATION LIFECYCLE
-// --------------------
-// Force execution to wait for EVERYTHING in the layout to complete rendering
-window.onload = () => {
-    updateUI();
-    client.auth.onAuthStateChange(() => { updateUI(); });
-};
