@@ -284,7 +284,7 @@ if (tournamentForm) {
         }
 
         const { error } = await client
-            .from("Registration") 
+            .from("tournament_regi") 
             .insert([{
                 username: username,
                 email: sessionData.session.user.email,
