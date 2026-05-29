@@ -158,3 +158,131 @@ document.getElementById("frm-dashboard-profile").addEventListener("submit", asyn
 
 // Run initial loading block
 document.addEventListener("DOMContentLoaded", runDashboardCompilation);
+
+
+// ----------------------------------------------------
+// PROFILE TOURNAMENT REGISTRATION TRACKER (profile.js)
+// ----------------------------------------------------
+
+// Ensure Supabase client reads cleanly inside profile.js scope
+async function syncProfileEvents() {
+    console.log("Profile Data Sync Initiated...");
+    
+    // 1. Get the current logged-in user from the active session
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) {
+        console.warn("No active session found on profile view.");
+        return;
+    }
+
+    // Resolve the display username
+    let username = session.user.user_metadata?.username;
+    if (!username) {
+        const { data: profile } = await client
+            .from("Registration")
+            .select("username")
+            .eq("email", session.user.email)
+            .maybeSingle();
+        username = profile?.username || session.user.email.split("@")[0];
+    }
+
+    const cleanUsername = username.trim();
+    const currentEmail = session.user.email;
+
+    // 2. Query the Supabase tournament registrations table
+    let { data: registrations, error } = await client
+        .from("tournament_regi")
+        .select("tournament_code, division, compete_level")
+        .eq("username", cleanUsername);
+
+    if (error) {
+        console.error("Database retrieve error:", error);
+        return;
+    }
+
+    // Fallback: If no matches by username, query by account email
+    if ((!registrations || registrations.length === 0) && currentEmail) {
+        const { data: emailRegs } = await client
+            .from("tournament_regi")
+            .select("tournament_code, division, compete_level")
+            .eq("username", currentEmail.trim());
+        if (emailRegs && emailRegs.length > 0) {
+            registrations = emailRegs;
+        }
+    }
+
+    // 3. Locate the target layout container on profile.html
+    // This looks for your standard container ID or searches for the card text dynamically
+    let targetBox = document.getElementById("dynamic-events-wrapper") || document.getElementById("container-upcoming-events");
+    
+    if (!targetBox) {
+        const sections = document.querySelectorAll("section, .dashboard-section-card");
+        for (let section of sections) {
+            if (section.textContent.includes("Your Registered Upcoming Events")) {
+                targetBox = section.querySelector(".tournament-list-container") || section;
+                break;
+            }
+        }
+    }
+
+    if (!targetBox) {
+        console.warn("Could not locate a valid 'Upcoming Events' container inside the HTML layout.");
+        return;
+    }
+
+    // Clear old static placeholders or hidden fields inside the tab panel
+    targetBox.innerHTML = "";
+
+    // 4. Render Rows if items exist, otherwise print fallback text cleanly
+    if (registrations && registrations.length > 0) {
+        registrations.forEach(event => {
+            const row = document.createElement("div");
+            row.className = "tournament-status-row";
+            row.style.display = "flex";
+            row.style.justifyContent = "space-between";
+            row.style.alignItems = "center";
+            row.style.padding = "12px 16px";
+            row.style.marginBottom = "8px";
+            row.style.background = "#f9fafb";
+            row.style.border = "1px solid #e5e7eb";
+            row.style.borderRadius = "6px";
+            
+            row.innerHTML = `
+                <div class="t-info-meta" style="text-align: left;">
+                    <h4 style="margin: 0 0 4px 0; color: #111827; font-size: 1.05rem; font-weight: bold;">${escapeHTML(event.tournament_code)}</h4>
+                    <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
+                </div>
+                <span class="status-pill pill-registered" style="background: #15803d; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px;">Registered</span>
+            `;
+            targetBox.appendChild(row);
+        });
+    } else {
+        targetBox.innerHTML = `
+            <p style="color: #888; font-style: italic; padding: 15px 0; margin: 0; text-align: left;">
+                You are not currently registered for any upcoming match frameworks.
+            </p>
+        `;
+    }
+}
+
+// Local helper to filter text string entries safely
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+// 5. Run automatically when profile.js loads
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncProfileEvents);
+} else {
+    syncProfileEvents();
+}
+
+// 6. Hook into your tab buttons dynamically!
+// Whenever you click anywhere on the tabs menu, it forces the data to redraw
+document.addEventListener("click", (e) => {
+    if (e.target.closest(".sidebar-menu li") || e.target.closest(".tab-btn")) {
+        // Small delay to let the tab finish animating or opening before injecting data
+        setTimeout(syncProfileEvents, 50);
+    }
+});
