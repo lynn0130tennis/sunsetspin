@@ -291,20 +291,23 @@
                 </form>
             </section>
 
-            <!-- SECTION 2: PLAYER'S SIGNED-UP UPCOMING TOURNAMENTS -->
-            <section class="dashboard-section-card" id="section-upcoming">
-                <h3>Your Registered Upcoming Events</h3>
-                <div class="tournament-list-container" id="container-upcoming-events">
-                    <!-- Dynamic Loading Placeholder row -->
-                    <div class="tournament-status-row">
-                        <div class="t-info-meta">
-                            <h4>Loading Registered Rosters...</h4>
-                            <p>Querying verified scheduled court allocations.</p>
-                        </div>
-                        <span class="status-pill pill-registered">Processing</span>
-                    </div>
-                </div>
-            </section>
+<section class="dashboard-section-card" id="section-upcoming">
+    <h3>Your Registered Upcoming Events</h3>
+    
+    <div class="tournament-list-container" id="container-upcoming-events">
+        
+        <div id="dynamic-events-wrapper"></div>
+
+        <div class="tournament-status-row" id="no-events-row" style="display: none;">
+            <div class="t-info-meta">
+                <h4>No Registered Events Found </h4>
+                <p>You haven't signed up for any upcoming tournament brackets yet.</p>
+            </div>
+            <span class="status-pill" style="background: #e5e7eb; color: #4b5563;">Empty</span>
+        </div>
+
+    </div>
+</section>
 
             <!-- SECTION 3: COMPLETED TOURNAMENTS WITH STATS AND RESULTS -->
             <section class="dashboard-section-card" id="section-history">
