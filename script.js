@@ -238,6 +238,11 @@ async function updateUI() {
         if (signupBtn) signupBtn.style.display = "none";
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
+
+        // === ADD THIS LINE HERE ===
+        // This fires off the tournament fetcher for the logged-in user
+        loadRegisteredEvents(username);
+
     } else {
         userStatus.textContent = "";
         if (regUsernameField) regUsernameField.value = "";
@@ -249,9 +254,6 @@ async function updateUI() {
         if (loginMessage) loginMessage.style.display = "block";
     }
 }
-
-document.addEventListener("DOMContentLoaded", updateUI);
-client.auth.onAuthStateChange(() => { updateUI(); });
 
 // --------------------
 // TOURNAMENT FORM DISPATCH LOGIC (WITH REINFORCED DUPLICATE INTERCEPTION)
@@ -327,4 +329,78 @@ if (tournamentForm) {
         
         if (regUsernameField) regUsernameField.value = username;
     });
+}
+// --------------------
+// PROFILE DASHBOARD DATA RENDERER (ALIGNED TO LAYOUT SCHEMAS)
+// --------------------
+async function loadRegisteredEvents(username) {
+    const container = document.getElementById("container-upcoming-events");
+    const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
+    const noEventsRow = document.getElementById("no-events-row");
+
+    // Guard Clause: Only execute if we are on a page containing this specific dashboard component
+    if (!container || !dynamicWrapper) return;
+
+    // Set initial loading state inside our dynamic area
+    dynamicWrapper.innerHTML = `
+        <div class="tournament-status-row" id="loading-events-row">
+            <div class="t-info-meta">
+                <h4>Loading Registered Rosters...</h4>
+                <p>Querying verified scheduled court allocations.</p>
+            </div>
+            <span class="status-pill pill-registered" style="background: #3b82f6; color: #fff;">Processing</span>
+        </div>
+    `;
+    if (noEventsRow) noEventsRow.style.display = "none";
+
+    // Query Supabase for registrations tied to this username
+    const { data: registrations, error } = await client
+        .from("tournament_regi")
+        .select("tournament_code, division, compete_level")
+        .eq("username", username);
+
+    // Wipe out the loading placeholder row
+    dynamicWrapper.innerHTML = "";
+
+    if (error) {
+        console.error("Error retrieving tournament data:", error);
+        dynamicWrapper.innerHTML = `
+            <div class="tournament-status-row">
+                <div class="t-info-meta">
+                    <h4 style="color: red;">Failed to Load Rosters</h4>
+                    <p>${error.message}</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    // If no events are returned, expose the native hidden fallback row structural block
+    if (!registrations || registrations.length === 0) {
+        if (noEventsRow) noEventsRow.style.display = "flex";
+        return;
+    }
+
+    // Render entries using your exact container structure rules
+    registrations.forEach(event => {
+        const row = document.createElement("div");
+        row.className = "tournament-status-row";
+
+        // Map data perfectly to your markup tags
+        row.innerHTML = `
+            <div class="t-info-meta">
+                <h4>${escapeHTML(event.tournament_code)}</h4>
+                <p>Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
+            </div>
+            <span class="status-pill pill-registered">Registered</span>
+        `;
+        
+        dynamicWrapper.appendChild(row);
+    });
+}
+
+// Simple escaping helper utility to shield layout parameters from broken strings
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
