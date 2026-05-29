@@ -225,8 +225,6 @@ if (logoutBtn) {
 async function updateUI() {
     const { data: { session } } = await client.auth.getSession();
 
-    if (!userStatus) return;
-
     if (session) {
         // FAIL-SAFE USERNAME RESOLUTION SEQUENCE
         let displayUsername = session.user.user_metadata?.username;
@@ -249,9 +247,8 @@ async function updateUI() {
             displayUsername = session.user.email.split("@")[0];
         }
 
-        // Apply string safely to text node anchors
-        userStatus.textContent = displayUsername; 
-
+        // Apply string safely to text node anchors if they exist on current page
+        if (userStatus) userStatus.textContent = displayUsername; 
         if (regUsernameField) regUsernameField.value = displayUsername;
 
         if (logoutBtn) logoutBtn.style.display = "inline-block";
@@ -260,11 +257,15 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
 
-        // Query tournament lists
-        loadRegisteredEvents(displayUsername);
+        // Safeguard: Wait completely for the DOM tree structure to compile before running the rendering block
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => loadRegisteredEvents(displayUsername));
+        } else {
+            loadRegisteredEvents(displayUsername);
+        }
 
     } else {
-        userStatus.textContent = "";
+        if (userStatus) userStatus.textContent = "";
         if (regUsernameField) regUsernameField.value = "";
 
         if (logoutBtn) logoutBtn.style.display = "none";
@@ -354,12 +355,15 @@ if (tournamentForm) {
 // PROFILE DASHBOARD DATA RENDERER (ALIGNED TO LAYOUT SCHEMAS)
 // --------------------
 async function loadRegisteredEvents(username) {
-    const container = document.getElementById("container-upcoming-events");
+    // If the element ID is container-upcoming-events on profile.html, pull it accurately
+    const container = document.getElementById("container-upcoming-events") || document.getElementById("Your Registered Upcoming Events");
     const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     const noEventsRow = document.getElementById("no-events-row");
 
-    if (!container || !dynamicWrapper) return;
+    // Exit cleanly if we are on an index/home layout page without a dashboard block
+    if (!dynamicWrapper) return;
 
+    // Set initial loading structural state
     dynamicWrapper.innerHTML = `
         <div class="tournament-status-row" id="loading-events-row">
             <div class="t-info-meta">
@@ -371,11 +375,16 @@ async function loadRegisteredEvents(username) {
     `;
     if (noEventsRow) noEventsRow.style.display = "none";
 
+    // Clean up username string to ensure query safety
+    const cleanUsername = username.trim();
+
+    // Query database table records
     const { data: registrations, error } = await client
         .from("tournament_regi")
         .select("tournament_code, division, compete_level")
-        .eq("username", username);
+        .eq("username", cleanUsername);
 
+    // Clear loading row placeholder
     dynamicWrapper.innerHTML = "";
 
     if (error) {
@@ -391,11 +400,13 @@ async function loadRegisteredEvents(username) {
         return;
     }
 
+    // Fallback if records are completely clean
     if (!registrations || registrations.length === 0) {
         if (noEventsRow) noEventsRow.style.display = "flex";
         return;
     }
 
+    // Append table items to wrapper area
     registrations.forEach(event => {
         const row = document.createElement("div");
         row.className = "tournament-status-row";
@@ -420,5 +431,8 @@ function escapeHTML(str) {
 // --------------------
 // APPLICATION LIFE CYCLE LISTENERS
 // --------------------
-document.addEventListener("DOMContentLoaded", updateUI);
+// Run baseline checks on execution entry
+updateUI();
+
+// Subscribe to real-time session modifications
 client.auth.onAuthStateChange(() => { updateUI(); });
