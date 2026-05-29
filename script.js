@@ -228,10 +228,31 @@ async function updateUI() {
     if (!userStatus) return;
 
     if (session) {
-        const username = session.user.user_metadata?.username || session.user.email;
-        userStatus.textContent = username; 
+        // FAIL-SAFE USERNAME RESOLUTION SEQUENCE
+        let displayUsername = session.user.user_metadata?.username;
 
-        if (regUsernameField) regUsernameField.value = username;
+        // Fallback Layer 1: Query database mapping if metadata context is blank
+        if (!displayUsername) {
+            const { data: profile } = await client
+                .from("Registration")
+                .select("username")
+                .eq("email", session.user.email)
+                .maybeSingle();
+            
+            if (profile?.username) {
+                displayUsername = profile.username;
+            }
+        }
+
+        // Fallback Layer 2: Default to cleanly splitting the login email address prefix
+        if (!displayUsername) {
+            displayUsername = session.user.email.split("@")[0];
+        }
+
+        // Apply string safely to text node anchors
+        userStatus.textContent = displayUsername; 
+
+        if (regUsernameField) regUsernameField.value = displayUsername;
 
         if (logoutBtn) logoutBtn.style.display = "inline-block";
         if (signinBtn) signinBtn.style.display = "none";
@@ -239,9 +260,8 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
 
-        // === ADD THIS LINE HERE ===
-        // This fires off the tournament fetcher for the logged-in user
-        loadRegisteredEvents(username);
+        // Query tournament lists
+        loadRegisteredEvents(displayUsername);
 
     } else {
         userStatus.textContent = "";
@@ -309,12 +329,10 @@ if (tournamentForm) {
             }]);
 
         if (error) {
-            // Check if the database error message or code references a unique key constraint violation
             if (error.message.includes("unique constraint") || error.code === "23505") {
                 formMessage.style.color = "orange";
                 formMessage.innerText = "You've already registered for this event!";
             } else {
-                // Keep standard reporting for any other random network/DB issues
                 console.error("Database Write Error:", error);
                 formMessage.style.color = "red";
                 formMessage.innerText = error.message;
@@ -322,14 +340,16 @@ if (tournamentForm) {
             return;
         }
 
-        // SUCCESSFUL WRITE
         formMessage.style.color = "green";
         formMessage.innerText = "Registration tracking posted successfully! 🎾";
         tournamentForm.reset();
         
         if (regUsernameField) regUsernameField.value = username;
+        
+        loadRegisteredEvents(username);
     });
 }
+
 // --------------------
 // PROFILE DASHBOARD DATA RENDERER (ALIGNED TO LAYOUT SCHEMAS)
 // --------------------
@@ -338,10 +358,8 @@ async function loadRegisteredEvents(username) {
     const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     const noEventsRow = document.getElementById("no-events-row");
 
-    // Guard Clause: Only execute if we are on a page containing this specific dashboard component
     if (!container || !dynamicWrapper) return;
 
-    // Set initial loading state inside our dynamic area
     dynamicWrapper.innerHTML = `
         <div class="tournament-status-row" id="loading-events-row">
             <div class="t-info-meta">
@@ -353,13 +371,11 @@ async function loadRegisteredEvents(username) {
     `;
     if (noEventsRow) noEventsRow.style.display = "none";
 
-    // Query Supabase for registrations tied to this username
     const { data: registrations, error } = await client
         .from("tournament_regi")
         .select("tournament_code, division, compete_level")
         .eq("username", username);
 
-    // Wipe out the loading placeholder row
     dynamicWrapper.innerHTML = "";
 
     if (error) {
@@ -375,18 +391,15 @@ async function loadRegisteredEvents(username) {
         return;
     }
 
-    // If no events are returned, expose the native hidden fallback row structural block
     if (!registrations || registrations.length === 0) {
         if (noEventsRow) noEventsRow.style.display = "flex";
         return;
     }
 
-    // Render entries using your exact container structure rules
     registrations.forEach(event => {
         const row = document.createElement("div");
         row.className = "tournament-status-row";
 
-        // Map data perfectly to your markup tags
         row.innerHTML = `
             <div class="t-info-meta">
                 <h4>${escapeHTML(event.tournament_code)}</h4>
@@ -399,8 +412,13 @@ async function loadRegisteredEvents(username) {
     });
 }
 
-// Simple escaping helper utility to shield layout parameters from broken strings
 function escapeHTML(str) {
     if (!str) return '';
     return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
+
+// --------------------
+// APPLICATION LIFE CYCLE LISTENERS
+// --------------------
+document.addEventListener("DOMContentLoaded", updateUI);
+client.auth.onAuthStateChange(() => { updateUI(); });
