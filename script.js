@@ -29,7 +29,7 @@ const authPassword = document.getElementById("auth-password");
 const authPhone = document.getElementById("auth-phone");
 const authGender = document.getElementById("auth-gender");
 const authUsta = document.getElementById("auth-usta");
-const authWechat = document.getElementById("auth-wechat"); // WeChat Selector Added
+const authWechat = document.getElementById("auth-wechat"); 
 
 const authSubmitBtn = document.getElementById("auth-submit-btn");
 const authMessage = document.getElementById("auth-message");
@@ -71,7 +71,7 @@ function openModal(mode) {
     if (authPhone) authPhone.value = "";
     if (authGender) authGender.value = "";
     if (authUsta) authUsta.value = "";
-    if (authWechat) authWechat.value = ""; // Clears WeChat buffer on open
+    if (authWechat) authWechat.value = ""; 
 
     if (mode === "signup") {
         authTitle.innerText = "Create Account";
@@ -87,7 +87,7 @@ function toggleAuthFields(displayStyle) {
     if (authPhone) authPhone.style.display = displayStyle;
     if (authGender) authGender.style.display = displayStyle;
     if (authUsta) authUsta.style.display = displayStyle;
-    if (authWechat) authWechat.style.display = displayStyle; // Toggles WeChat Visibility
+    if (authWechat) authWechat.style.display = displayStyle; 
 }
 
 function closeAuthModal() {
@@ -106,7 +106,7 @@ window.addEventListener("click", (e) => {
 });
 
 // --------------------
-// SUBMISSION LOGIC DISPATCHER
+// SUBMISSION LOGIC DISPATCHER (SIGN UP / SIGN IN)
 // --------------------
 if (authSubmitBtn) {
     authSubmitBtn.addEventListener("click", async (e) => {
@@ -128,7 +128,7 @@ if (authSubmitBtn) {
             const phone = authPhone.value.trim();
             const gender = authGender?.value || null;
             const usta = authUsta?.value || null;
-            const wechat = authWechat?.value.trim() || null; // Capturing WeChat String Data
+            const wechat = authWechat?.value.trim() || null; 
 
             if (!email || !phone) {
                 authMessage.innerText = "Please complete all account fields.";
@@ -146,7 +146,7 @@ if (authSubmitBtn) {
                 return;
             }
 
-            // Sync registration parameters to the central master registration table
+            // Creating the user master account record inside "Registration"
             const { error: insertError } = await client
                 .from("Registration")
                 .insert([{
@@ -155,7 +155,7 @@ if (authSubmitBtn) {
                     phone,
                     gender,
                     usta,
-                    wechat, // Saving WeChat directly to your verified column 
+                    wechat, 
                     created_at: new Date().toISOString()
                 }]);
 
@@ -164,7 +164,7 @@ if (authSubmitBtn) {
                 return;
             }
 
-            // Fire off Resend Edge Function
+            // Welcome email dispatch trigger
             try {
                 await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
                     method: "POST",
@@ -185,7 +185,6 @@ if (authSubmitBtn) {
 
         // --- SIGN IN PROCESSING LAYER ---
         } else {
-            // Check username map to locate standard auth email row target
             const { data: profileRow, error: profileErr } = await client
                 .from("Registration")
                 .select("email")
@@ -251,12 +250,11 @@ async function updateUI() {
     }
 }
 
-// Initialize Application Lifecycles listeners
 document.addEventListener("DOMContentLoaded", updateUI);
 client.auth.onAuthStateChange(() => { updateUI(); });
 
 // --------------------
-// TOURNAMENT FORM DISPATCH LOGIC
+// TOURNAMENT FORM DISPATCH LOGIC (ROUTING FIXED)
 // --------------------
 const tournamentForm = document.getElementById("tournament-form");
 const formMessage = document.getElementById("form-message");
@@ -283,17 +281,19 @@ if (tournamentForm) {
             return;
         }
 
+        // FIXED: Now targets the tournament log table with correct database schema columns
         const { error } = await client
             .from("tournament_regi") 
             .insert([{
                 username: username,
-                email: sessionData.session.user.email,
-                tournament: tournament, 
+                tournament_code: tournament, 
                 division: division,
+                compete_level: compete_level,
                 created_at: new Date().toISOString()
             }]);
 
         if (error) {
+            console.error("Database Write Error:", error);
             formMessage.style.color = "red";
             formMessage.innerText = error.message;
             return;
