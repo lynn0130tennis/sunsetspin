@@ -336,29 +336,39 @@ if (tournamentForm) {
 }
 
 // --------------------
-// PROFILE DASHBOARD DATA RENDERER
+// PROFILE DASHBOARD DATA RENDERER (OMNI-TARGET EDITION)
 // --------------------
 async function loadRegisteredEvents(username) {
-    console.log("DEBUG: Running loadRegisteredEvents for:", username);
-
-    const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
-    const noEventsRow = document.getElementById("no-events-row");
-
+    // Look for our specific wrapper, or find the main header and target its parent card directly
+    let dynamicWrapper = document.getElementById("dynamic-events-wrapper");
+    
     if (!dynamicWrapper) {
-        console.warn("DEBUG: 'dynamic-events-wrapper' element not found on this page layout.");
-        return;
+        const sections = document.querySelectorAll("section, .dashboard-section-card");
+        for (let section of sections) {
+            if (section.textContent.includes("Your Registered Upcoming Events")) {
+                // Look for an existing paragraph or container to replace inside this card
+                let contentBox = section.querySelector(".tournament-list-container") || section;
+                
+                // Create our dynamic wrapper injection hub on the fly
+                dynamicWrapper = document.createElement("div");
+                dynamicWrapper.id = "dynamic-events-wrapper";
+                
+                // Clear the static placeholder text and insert our hub
+                contentBox.innerHTML = "";
+                contentBox.appendChild(dynamicWrapper);
+                break;
+            }
+        }
     }
 
+    // Guard escape if page doesn't contain this feature component
+    if (!dynamicWrapper) return;
+
     dynamicWrapper.innerHTML = `
-        <div class="tournament-status-row" id="loading-events-row">
-            <div class="t-info-meta">
-                <h4>Loading Registered Rosters...</h4>
-                <p>Querying verified scheduled court allocations (Checking: ${username}).</p>
-            </div>
-            <span class="status-pill pill-registered" style="background: #3b82f6; color: #fff;">Processing</span>
+        <div class="tournament-status-row" style="padding: 10px 0; color: #666;">
+            <p>🔄 Querying tournament records for <strong>${username}</strong>...</p>
         </div>
     `;
-    if (noEventsRow) noEventsRow.style.display = "none";
 
     try {
         const cleanUsername = username.trim();
@@ -369,15 +379,15 @@ async function loadRegisteredEvents(username) {
             .eq("username", cleanUsername);
 
         if (error) {
-            console.error("DEBUG ERROR: Supabase query failed:", error);
-            dynamicWrapper.innerHTML = `<div class="tournament-status-row"><p style="color:red;">Database Error: ${error.message}</p></div>`;
+            console.error("Database retrieve error:", error);
+            dynamicWrapper.innerHTML = `<p style="color:red;">Error loading brackets: ${error.message}</p>`;
             return;
         }
 
         dynamicWrapper.innerHTML = "";
 
         if (!registrations || registrations.length === 0) {
-            // Backup check inside the try block: Verify using email address safely
+            // Backup validation check: Look up data via your linked profile email
             const sessionResponse = await client.auth.getSession();
             const currentEmail = sessionResponse.data?.session?.user?.email;
 
@@ -393,27 +403,41 @@ async function loadRegisteredEvents(username) {
                 }
             }
 
-            if (noEventsRow) noEventsRow.style.display = "flex";
+            dynamicWrapper.innerHTML = `
+                <p style="color: #888; font-style: italic; padding: 10px 0;">
+                    You are not currently registered for any upcoming match frameworks.
+                </p>
+            `;
             return;
         }
 
         renderRows(registrations, dynamicWrapper);
 
     } catch (catchErr) {
-        console.error("DEBUG CRITICAL EXCEPTION:", catchErr);
+        console.error("Renderer runtime exception:", catchErr);
     }
 }
 
 function renderRows(items, wrapperElement) {
+    wrapperElement.innerHTML = "";
     items.forEach(event => {
         const row = document.createElement("div");
         row.className = "tournament-status-row";
+        row.style.display = "flex";
+        row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
+        row.style.padding = "12px 16px";
+        row.style.marginBottom = "8px";
+        row.style.background = "#f9fafb";
+        row.style.border = "1px solid #e5e7eb";
+        row.style.borderRadius = "6px";
+        
         row.innerHTML = `
-            <div class="t-info-meta">
-                <h4>${escapeHTML(event.tournament_code)}</h4>
-                <p>Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
+            <div class="t-info-meta" style="text-align: left;">
+                <h4 style="margin: 0 0 4px 0; color: #111827; font-size: 1.05rem;">${escapeHTML(event.tournament_code)}</h4>
+                <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
             </div>
-            <span class="status-pill pill-registered" style="background: #15803d; color: #fff; padding: 4px 8px; border-radius: 4px;">Registered</span>
+            <span class="status-pill pill-registered" style="background: #15803d; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px;">Registered</span>
         `;
         wrapperElement.appendChild(row);
     });
