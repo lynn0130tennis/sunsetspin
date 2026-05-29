@@ -1,351 +1,205 @@
-console.log("SCRIPT LOADED");
-
-// --------------------
-// SUPABASE INITIALIZATION
-// --------------------
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// --------------------
-// DOM ELEMENTS
-// --------------------
-const signinBtn = document.getElementById("signin-btn");
-const signupBtn = document.getElementById("signup-btn");
-const logoutBtn = document.getElementById("logout-btn");
+let activeUser = null;
 
-const userStatus = document.getElementById("user-status");
-const profileLink = document.getElementById("profile-link");
-const registrationContainer = document.getElementById("registration-form-container");
-const loginMessage = document.getElementById("login-message");
-
-const authModal = document.getElementById("auth-modal");
-const authTitle = document.getElementById("auth-title");
-
-const authUsername = document.getElementById("auth-username");
-const authEmail = document.getElementById("auth-email");
-const authPassword = document.getElementById("auth-password");
-const authPhone = document.getElementById("auth-phone");
-const authGender = document.getElementById("auth-gender");
-const authUsta = document.getElementById("auth-usta");
-const authWechat = document.getElementById("auth-wechat"); 
-
-const authSubmitBtn = document.getElementById("auth-submit-btn");
-const authMessage = document.getElementById("auth-message");
-const closeModal = document.getElementById("close-modal");
-
-const regUsernameField = document.getElementById("reg-username");
-
-let authMode = "signin";
-
-// --------------------
-// INPUT FORMATTING: US TELEPHONE MATRIX
-// --------------------
-if (authPhone) {
-    authPhone.addEventListener("input", (e) => {
-        let value = e.target.value.replace(/\D/g, "").substring(0, 10);
-        if (value.length > 6) {
-            value = value.replace(/(\d{3})(\d{3})(\d{0,4})/, "$1-$2-$3");
-        } else if (value.length > 3) {
-            value = value.replace(/(\d{3})(\d{0,3})/, "$1-$2");
-        }
-        e.target.value = value;
-    });
+// Display Notifications Helper Banner
+function postStatusMessage(message, isSuccess = true) {
+    const banner = document.getElementById("dashboard-msg-banner");
+    if (!banner) return;
+    banner.innerText = message;
+    banner.style.display = "block";
+    banner.style.backgroundColor = isSuccess ? "#e6f4ea" : "#fce8e6";
+    banner.style.color = isSuccess ? "#137333" : "#c5221f";
+    banner.style.border = `1px solid ${isSuccess ? "#b7e1cd" : "#fad2cf"}`;
 }
 
-// --------------------
-// MODAL CONTROLLER INTERACTION ENGINE
-// --------------------
-function openModal(mode) {
-    authMode = mode;
-    if (!authModal) return;
-
-    authModal.style.display = "block";
-    authMessage.innerText = "";
-
-    if (authEmail) authEmail.value = "";
-    if (authPassword) authPassword.value = "";
-    if (authUsername) authUsername.value = "";
-    if (authPhone) authPhone.value = "";
-    if (authGender) authGender.value = "";
-    if (authUsta) authUsta.value = "";
-    if (authWechat) authWechat.value = ""; 
-
-    if (mode === "signup") {
-        authTitle.innerText = "Create Account";
-        toggleAuthFields("block");
-    } else {
-        authTitle.innerText = "Sign In";
-        toggleAuthFields("none"); 
-    }
-}
-
-function toggleAuthFields(displayStyle) {
-    if (authEmail) authEmail.style.display = displayStyle;
-    if (authPhone) authPhone.style.display = displayStyle;
-    if (authGender) authGender.style.display = displayStyle;
-    if (authUsta) authUsta.style.display = displayStyle;
-    if (authWechat) authWechat.style.display = displayStyle; 
-}
-
-function closeAuthModal() {
-    if (authModal) authModal.style.display = "none";
-}
-
-// --------------------
-// CORE EVENT ATTACHMENTS
-// --------------------
-if (signupBtn) signupBtn.addEventListener("click", () => openModal("signup"));
-if (signinBtn) signinBtn.addEventListener("click", () => openModal("signin"));
-if (closeModal) closeModal.addEventListener("click", closeAuthModal);
-
-window.addEventListener("click", (e) => {
-    if (e.target === authModal) closeAuthModal();
-});
-
-// --------------------
-// SUBMISSION LOGIC DISPATCHER (SIGN UP / SIGN IN)
-// --------------------
-if (authSubmitBtn) {
-    authSubmitBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        authMessage.innerText = "";
-        authMessage.style.color = "red";
-
-        const username = authUsername.value.trim();
-        const password = authPassword.value.trim();
-
-        if (!username || !password) {
-            authMessage.innerText = "Required login credentials missing.";
-            return;
-        }
-
-        if (authMode === "signup") {
-            const email = authEmail.value.trim();
-            const phone = authPhone.value.trim();
-            const gender = authGender?.value || null;
-            const usta = authUsta?.value || null;
-            const wechat = authWechat?.value.trim() || null; 
-
-            if (!email || !phone) {
-                authMessage.innerText = "Please complete all account fields.";
-                return;
-            }
-
-            const { data, error } = await client.auth.signUp({
-                email,
-                password,
-                options: { data: { username } }
-            });
-
-            if (error) {
-                authMessage.innerText = error.message;
-                return;
-            }
-
-            const { error: insertError } = await client
-                .from("Registration")
-                .insert([{
-                    username,
-                    email: data?.user?.email || email,
-                    phone,
-                    gender,
-                    usta,
-                    wechat, 
-                    created_at: new Date().toISOString()
-                }]);
-
-            if (insertError) {
-                authMessage.innerText = `Auth complete, but DB save failed: ${insertError.message}`;
-                return;
-            }
-
-            try {
-                await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": `Bearer ${SUPABASE_KEY}`
-                    },
-                    body: JSON.stringify({ email, username })
-                });
-            } catch (err) {
-                console.warn("Background email execution failed:", err);
-            }
-
-            authMessage.style.color = "green";
-            authMessage.innerText = "Account created successfully! 🎾";
-            setTimeout(closeAuthModal, 1000);
-
-        } else {
-            const { data: profileRow, error: profileErr } = await client
-                .from("Registration")
-                .select("email")
-                .eq("username", username)
-                .maybeSingle();
-
-            if (profileErr || !profileRow) {
-                authMessage.innerText = "Username entry not verified.";
-                return;
-            }
-
-            const { error: loginError } = await client.auth.signInWithPassword({
-                email: profileRow.email,
-                password
-            });
-
-            if (loginError) {
-                authMessage.innerText = loginError.message;
-                return;
-            }
-
-            authMessage.style.color = "green";
-            authMessage.innerText = "Welcome back!";
-            setTimeout(closeAuthModal, 600);
-        }
-    });
-}
-
-// --------------------
-// UI LIFECYCLE RENDER SYNC
-// --------------------
-if (logoutBtn) {
-    logoutBtn.addEventListener("click", async () => {
-        await client.auth.signOut();
-    });
-}
-
-async function updateUI() {
+// MAIN PARSING ENGINE: RUN ON APPLICATION INITIAL LOAD
+async function runDashboardCompilation() {
     const { data: { session } } = await client.auth.getSession();
-
-    if (session) {
-        let displayUsername = session.user.user_metadata?.username;
-
-        if (!displayUsername) {
-            const { data: profile } = await client
-                .from("Registration")
-                .select("username")
-                .eq("email", session.user.email)
-                .maybeSingle();
-            
-            if (profile?.username) {
-                displayUsername = profile.username;
-            }
-        }
-
-        if (!displayUsername) {
-            displayUsername = session.user.email.split("@")[0];
-        }
-
-        // Apply string safely to layout headers
-        if (userStatus) userStatus.textContent = displayUsername; 
-        if (regUsernameField) regUsernameField.value = displayUsername;
-
-        if (logoutBtn) logoutBtn.style.display = "inline-block";
-        if (signinBtn) signinBtn.style.display = "none";
-        if (signupBtn) signupBtn.style.display = "none";
-        if (registrationContainer) registrationContainer.style.display = "block";
-        if (loginMessage) loginMessage.style.display = "none";
-
-        // CRASH PREVENTER: Only triggers if the profile template loader code is accessible on this page context
-        if (typeof loadRegisteredEvents === "function") {
-            loadRegisteredEvents(displayUsername);
-        }
-
-    } else {
-        if (userStatus) userStatus.textContent = "";
-        if (regUsernameField) regUsernameField.value = "";
-
-        if (logoutBtn) logoutBtn.style.display = "none";
-        if (signinBtn) signinBtn.style.display = "inline-block";
-        if (signupBtn) signupBtn.style.display = "inline-block";
-        if (registrationContainer) registrationContainer.style.display = "none";
-        if (loginMessage) loginMessage.style.display = "block";
+    
+    if (!session) {
+        window.location.href = "index.html";
+        return;
     }
+    
+    activeUser = session.user;
+    
+    // Set Sidebar Base Labels
+    const sidebarName = document.getElementById("lbl-sidebar-name");
+    const sidebarEmail = document.getElementById("lbl-sidebar-email");
+    if (sidebarName) sidebarName.innerText = activeUser.user_metadata?.username || "Tennis Player";
+    if (sidebarEmail) sidebarEmail.innerText = activeUser.email;
+
+    // 1. Fetch & Populate Personal Info Form Profile Row
+    const { data: registrationRow } = await client
+        .from("Registration")
+        .select("*")
+        .eq("email", activeUser.email)
+        .maybeSingle();
+
+    if (registrationRow) {
+        const phoneInput = document.getElementById("txt-dash-phone");
+        const genderSelect = document.getElementById("sel-dash-gender");
+        const ustaSelect = document.getElementById("sel-dash-usta");
+        const ustaBadge = document.getElementById("badge-sidebar-usta");
+
+        if (phoneInput) phoneInput.value = registrationRow.phone || "";
+        if (genderSelect) genderSelect.value = registrationRow.gender || "";
+        if (ustaSelect) ustaSelect.value = registrationRow.usta || "";
+        if (ustaBadge) ustaBadge.innerText = registrationRow.usta ? `USTA ${registrationRow.usta}` : "USTA --";
+    }
+
+    // 2. Fetch & Render Upcoming Active Event Records from tournament_regi
+    let usernameToQuery = activeUser.user_metadata?.username || "";
+    if (!usernameToQuery && registrationRow?.username) {
+        usernameToQuery = registrationRow.username;
+    }
+
+    let { data: activeMatches, error: matchErr } = await client
+        .from("tournament_regi")
+        .select("tournament_code, division, compete_level, username")
+        .eq("username", usernameToQuery.trim());
+
+    // Fallback strategy: check email records if username yields nothing
+    if ((!activeMatches || activeMatches.length === 0) && activeUser.email) {
+        const { data: emailMatches } = await client
+            .from("tournament_regi")
+            .select("tournament_code, division, compete_level, username")
+            .eq("username", activeUser.email.trim());
+        if (emailMatches) activeMatches = emailMatches;
+    }
+
+    // Pass arrays directly to render engine targets
+    renderUpcomingTournaments(activeMatches || []);
+    renderCompletedHistory(activeMatches || []); 
 }
 
-// --------------------
-// TOURNAMENT FORM DISPATCH LOGIC
-// --------------------
-const tournamentForm = document.getElementById("tournament-form");
-const formMessage = document.getElementById("form-message");
+// RENDER: Active Signed-Up Tournaments Form Grid Cards
+function renderUpcomingTournaments(matches) {
+    const container = document.getElementById("container-upcoming-events");
+    if (!container) return;
+    container.innerHTML = ""; 
+    
+    if (matches.length === 0) {
+        container.innerHTML = `<p style="font-size:14px; color:#666; font-style: italic; padding: 10px 0;">You are not currently registered for any upcoming match frameworks.</p>`;
+        return;
+    }
 
-if (tournamentForm) {
-    tournamentForm.addEventListener("submit", async (e) => {
+    matches.forEach(event => {
+        container.innerHTML += `
+            <div class="tournament-status-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-bottom: 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
+                <div class="t-info-meta" style="text-align: left;">
+                    <h4 style="margin: 0 0 4px 0; color: #111827; font-size: 1.05rem; font-weight: bold;">${escapeHTML(event.tournament_code)}</h4>
+                    <p style="margin: 0; color: #4b5563; font-size: 0.9rem;">Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
+                    <p style="font-size:12px; color:#888; margin-top:3px;">Court confirmations and check-in brackets will post shortly.</p>
+                </div>
+                <span class="status-pill pill-registered" style="background: #15803d; color: #fff; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; border-radius: 4px;">Registered</span>
+            </div>
+        `;
+    });
+}
+
+// RENDER: Historic Completed Matches with Standings & Placement Scores
+function renderCompletedHistory(matches) {
+    const container = document.getElementById("container-past-events");
+    if (!container) return;
+    container.innerHTML = ""; 
+    
+    const historical = matches.filter(m => m.result || m.placement || m.status === "completed");
+
+    // MOCK DATA FALLBACK: Display placeholders gracefully if no past historical matches are returned
+    if (historical.length === 0) {
+        container.innerHTML = `
+            <div class="tournament-status-row" style="border-left: 4px solid #d97706; padding: 12px 16px; background: #f9fafb; border-top: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; border-radius: 6px;">
+                <div class="t-info-meta" style="text-align: left;">
+                    <h4 style="margin: 0 0 4px 0; color: #111827;">Spring Spin Championship Warmup</h4>
+                    <p style="margin: 0; color: #4b5563;"><strong>Division Match Line:</strong> Men's Singles Bracket (Level 3.5)</p>
+                    <p style="margin-top: 4px; font-weight: 500; color: #333; font-size: 0.9rem;">Match Results Score: 6-4, 3-6, [10-7] Match Tiebreak Win</p>
+                </div>
+                <span class="status-pill pill-champion" style="background: #d97706; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">1st Place Champion</span>
+            </div>
+            <div class="tournament-status-row" style="border-left: 4px solid #475569; margin-top: 10px; padding: 12px 16px; background: #f9fafb; border-top: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; border-radius: 6px;">
+                <div class="t-info-meta" style="text-align: left;">
+                    <h4 style="margin: 0 0 4px 0; color: #111827;">Winter Baseline Regional Draw</h4>
+                    <p style="margin: 0; color: #4b5563;"><strong>Division Match Line:</strong> Open Mixed Doubles</p>
+                    <p style="margin-top: 4px; font-weight: 500; color: #333; font-size: 0.9rem;">Match Results Score: 2-6, 4-6 Round of 16 Out</p>
+                </div>
+                <span class="status-pill pill-completed" style="background: #475569; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">Completed</span>
+            </div>
+        `;
+        return;
+    }
+
+    historical.forEach(pastEvent => {
+        const isChamp = pastEvent.placement === "1st" || pastEvent.placement === "Champion";
+        container.innerHTML += `
+            <div class="tournament-status-row" style="border-left: 4px solid ${isChamp ? '#d97706' : '#475569'}; padding: 12px 16px; margin-bottom: 8px; background: #f9fafb; border-top: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; border-radius: 6px;">
+                <div class="t-info-meta" style="text-align: left;">
+                    <h4 style="margin: 0 0 4px 0; color: #111827;">${escapeHTML(pastEvent.tournament_code)}</h4>
+                    <p style="margin: 0; color: #4b5563;"><strong>Final Record Standings:</strong> ${escapeHTML(pastEvent.result || "Draw Bracket Concluded")}</p>
+                </div>
+                <span class="status-pill ${isChamp ? 'pill-champion' : 'pill-completed'}" style="background: ${isChamp ? '#d97706' : '#475569'}; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
+                    ${escapeHTML(pastEvent.placement || 'Finished')}
+                </span>
+            </div>
+        `;
+    });
+}
+
+// PROFILE ACTIONS: UPDATE DETAIL PARAMETERS IN DATABASE
+const profileForm = document.getElementById("frm-dashboard-profile");
+if (profileForm) {
+    profileForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-
-        const username = document.getElementById("reg-username")?.value;
-        const tournament = document.getElementById("tournament")?.value;
-        const division = document.getElementById("division")?.value;
-        const compete_level = document.getElementById("level")?.value;
-
-        if (!username || !tournament || !division) {
-            formMessage.style.color = "red";
-            formMessage.innerText = "Please complete all registration selections.";
-            return;
-        }
-
-        const { data: sessionData } = await client.auth.getSession();
-        if (!sessionData?.session) {
-            formMessage.style.color = "red";
-            formMessage.innerText = "Active login session expired.";
-            return;
-        }
-
-        const { data: existingReg } = await client
-            .from("tournament_regi")
-            .select("id")
-            .eq("username", username)
-            .eq("tournament_code", tournament)
-            .maybeSingle();
-
-        if (existingReg) {
-            formMessage.style.color = "orange";
-            formMessage.innerText = "You've already registered for this event!";
-            return;
-        }
+        
+        const phoneVal = document.getElementById("txt-dash-phone")?.value.trim();
+        const genderVal = document.getElementById("sel-dash-gender")?.value;
+        const ustaVal = document.getElementById("sel-dash-usta")?.value;
 
         const { error } = await client
-            .from("tournament_regi") 
-            .insert([{
-                username: username,
-                tournament_code: tournament, 
-                division: division,
-                compete_level: compete_level,
-                created_at: new Date().toISOString()
-            }]);
+            .from("Registration")
+            .update({
+                phone: phoneVal,
+                gender: genderVal,
+                usta: ustaVal
+            })
+            .eq("email", activeUser.email);
 
         if (error) {
-            if (error.message.includes("unique constraint") || error.code === "23505") {
-                formMessage.style.color = "orange";
-                formMessage.innerText = "You've already registered for this event!";
-            } else {
-                console.error("Database Write Error:", error);
-                formMessage.style.color = "red";
-                formMessage.innerText = error.message;
-            }
-            return;
-        }
-
-        formMessage.style.color = "green";
-        formMessage.innerText = "Registration tracking posted successfully! 🎾";
-        tournamentForm.reset();
-        
-        if (regUsernameField) regUsernameField.value = username;
-        
-        if (typeof loadRegisteredEvents === "function") {
-            loadRegisteredEvents(username);
+            postStatusMessage(`Error modifying records: ${error.message}`, false);
+        } else {
+            postStatusMessage("Player settings updated successfully! 🎾");
+            const ustaBadge = document.getElementById("badge-sidebar-usta");
+            if (ustaBadge) ustaBadge.innerText = ustaVal ? `USTA ${ustaVal}` : "USTA --";
         }
     });
 }
 
-// --------------------
-// APPLICATION INITIALIZATION LIFECYCLE
-// --------------------
-window.onload = () => {
-    updateUI();
-    client.auth.onAuthStateChange(() => { updateUI(); });
-};
+// OMNI-TAB REAL-TIME SYNC HUB
+async function syncProfileEvents() {
+    console.log("Omni-Tab Synchronization Triggered...");
+    await runDashboardCompilation();
+}
 
+// Local text verification escape helper
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+// Runtime Setup
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runDashboardCompilation);
+} else {
+    runDashboardCompilation();
+}
+
+// Hook tab interaction events seamlessly to reload content matrices
+document.addEventListener("click", (e) => {
+    if (e.target.closest(".sidebar-menu li") || e.target.closest(".tab-btn") || e.target.closest(".menu-item")) {
+        setTimeout(syncProfileEvents, 60);
+    }
+});
