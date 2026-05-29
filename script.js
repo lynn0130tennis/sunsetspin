@@ -64,7 +64,6 @@ function openModal(mode) {
     authModal.style.display = "block";
     authMessage.innerText = "";
 
-    // Safely reset stale user entry buffers
     if (authEmail) authEmail.value = "";
     if (authPassword) authPassword.value = "";
     if (authUsername) authUsername.value = "";
@@ -122,7 +121,6 @@ if (authSubmitBtn) {
             return;
         }
 
-        // --- SIGN UP PROCESSING LAYER ---
         if (authMode === "signup") {
             const email = authEmail.value.trim();
             const phone = authPhone.value.trim();
@@ -146,7 +144,6 @@ if (authSubmitBtn) {
                 return;
             }
 
-            // Creating the user master account record inside "Registration"
             const { error: insertError } = await client
                 .from("Registration")
                 .insert([{
@@ -164,7 +161,6 @@ if (authSubmitBtn) {
                 return;
             }
 
-            // Welcome email dispatch trigger
             try {
                 await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
                     method: "POST",
@@ -183,7 +179,6 @@ if (authSubmitBtn) {
             authMessage.innerText = "Account created successfully! 🎾";
             setTimeout(closeAuthModal, 1000);
 
-        // --- SIGN IN PROCESSING LAYER ---
         } else {
             const { data: profileRow, error: profileErr } = await client
                 .from("Registration")
@@ -226,7 +221,6 @@ async function updateUI() {
     const { data: { session } } = await client.auth.getSession();
 
     if (session) {
-        // FAIL-SAFE USERNAME RESOLUTION SEQUENCE
         let displayUsername = session.user.user_metadata?.username;
 
         if (!displayUsername) {
@@ -245,7 +239,6 @@ async function updateUI() {
             displayUsername = session.user.email.split("@")[0];
         }
 
-        // Apply string safely to text node anchors if they exist on the current page
         if (userStatus) userStatus.textContent = displayUsername; 
         if (regUsernameField) regUsernameField.value = displayUsername;
 
@@ -255,7 +248,6 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
 
-        // Call the data loader with the resolved username
         loadRegisteredEvents(displayUsername);
 
     } else {
@@ -344,21 +336,19 @@ if (tournamentForm) {
 }
 
 // --------------------
-// PROFILE DASHBOARD DATA RENDERER (DIAGNOSTIC EDITION)
+// PROFILE DASHBOARD DATA RENDERER
 // --------------------
 async function loadRegisteredEvents(username) {
-    console.log("DEBUG: loadRegisteredEvents triggered for username:", username);
+    console.log("DEBUG: Running loadRegisteredEvents for:", username);
 
     const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     const noEventsRow = document.getElementById("no-events-row");
 
-    // Diagnostic Check 1: Is the HTML target actually found?
     if (!dynamicWrapper) {
-        console.error("DEBUG ERROR: Cannot find HTML element with id='dynamic-events-wrapper'. Make sure it's inside your profile.html section!");
+        console.warn("DEBUG: 'dynamic-events-wrapper' element not found on this page layout.");
         return;
     }
 
-    // Show processing state visually
     dynamicWrapper.innerHTML = `
         <div class="tournament-status-row" id="loading-events-row">
             <div class="t-info-meta">
@@ -372,59 +362,48 @@ async function loadRegisteredEvents(username) {
 
     try {
         const cleanUsername = username.trim();
-        console.log("DEBUG: Fetching from table 'tournament_regi' where username =", cleanUsername);
 
-        // Fetch row data
         const { data: registrations, error } = await client
             .from("tournament_regi")
             .select("tournament_code, division, compete_level")
             .eq("username", cleanUsername);
 
         if (error) {
-            console.error("DEBUG ERROR: Supabase query failed completely:", error);
+            console.error("DEBUG ERROR: Supabase query failed:", error);
             dynamicWrapper.innerHTML = `<div class="tournament-status-row"><p style="color:red;">Database Error: ${error.message}</p></div>`;
             return;
         }
 
-        console.log("DEBUG: Database returned rows successfully. Data found:", registrations);
-
-        // Wipe processing visual
         dynamicWrapper.innerHTML = "";
 
-        // Diagnostic Check 2: If array returned clean, run a fallback query using the logged-in email address
         if (!registrations || registrations.length === 0) {
-            console.warn(`DEBUG WARNING: 0 events found matching exact string '${cleanUsername}'. Trying secondary email backup check...`);
-            
-            const { data: { session } } = await client.auth.getSession();
-            if (session?.user?.email) {
-                console.log("DEBUG: Attempting lookup using account email:", session.user.email);
+            // Backup check inside the try block: Verify using email address safely
+            const sessionResponse = await client.auth.getSession();
+            const currentEmail = sessionResponse.data?.session?.user?.email;
+
+            if (currentEmail) {
                 const { data: emailRegs } = await client
                     .from("tournament_regi")
                     .select("tournament_code, division, compete_level")
-                    .eq("username", session.user.email);
+                    .eq("username", currentEmail);
 
                 if (emailRegs && emailRegs.length > 0) {
-                    console.log("DEBUG SUCCESS: Found entries saved under email instead! Rendering now...");
                     renderRows(emailRegs, dynamicWrapper);
                     return;
                 }
             }
 
-            // If truly empty across both fields, open the structural fallback panel
-            console.log("DEBUG: No records found for username or email. Displaying empty state.");
             if (noEventsRow) noEventsRow.style.display = "flex";
             return;
         }
 
-        // Standard happy path render loop
         renderRows(registrations, dynamicWrapper);
 
     } catch (catchErr) {
-        console.error("DEBUG CRITICAL EXCEPTION: An unexpected page script crash blocked execution:", catchErr);
+        console.error("DEBUG CRITICAL EXCEPTION:", catchErr);
     }
 }
 
-// Helper block to append dynamic status cards cleanly
 function renderRows(items, wrapperElement) {
     items.forEach(event => {
         const row = document.createElement("div");
@@ -434,8 +413,21 @@ function renderRows(items, wrapperElement) {
                 <h4>${escapeHTML(event.tournament_code)}</h4>
                 <p>Division: <strong>${escapeHTML(event.division)}</strong> | Level: <strong>${escapeHTML(event.compete_level || 'N/A')}</strong></p>
             </div>
-            <span class="status-pill pill-registered" style="background: #15803d; color: #fff;">Registered</span>
+            <span class="status-pill pill-registered" style="background: #15803d; color: #fff; padding: 4px 8px; border-radius: 4px;">Registered</span>
         `;
         wrapperElement.appendChild(row);
     });
 }
+
+function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+// --------------------
+// APPLICATION INITIALIZATION LIFECYCLE
+// --------------------
+window.onload = () => {
+    updateUI();
+    client.auth.onAuthStateChange(() => { updateUI(); });
+};
