@@ -254,7 +254,7 @@ document.addEventListener("DOMContentLoaded", updateUI);
 client.auth.onAuthStateChange(() => { updateUI(); });
 
 // --------------------
-// TOURNAMENT FORM DISPATCH LOGIC (WITH DUPLICATE VALIDATION CHECK)
+// TOURNAMENT FORM DISPATCH LOGIC (WITH REINFORCED DUPLICATE INTERCEPTION)
 // --------------------
 const tournamentForm = document.getElementById("tournament-form");
 const formMessage = document.getElementById("form-message");
@@ -281,7 +281,7 @@ if (tournamentForm) {
             return;
         }
 
-        // 1. CHRONOLOGICAL DUPLICATE REGISTRATION VERIFICATION GUARD
+        // LAYER 1: PROACTIVE DUPLICATE VERIFICATION QUERY
         const { data: existingReg, error: checkError } = await client
             .from("tournament_regi")
             .select("id")
@@ -289,18 +289,13 @@ if (tournamentForm) {
             .eq("tournament_code", tournament)
             .maybeSingle();
 
-        if (checkError) {
-            console.error("Validation verification error:", checkError);
-        }
-
-        // 2. TRIGGER ALERT WINDOW IF PRE-EXISTING ENTRY SELECTION IS NOT NULL
         if (existingReg) {
             formMessage.style.color = "orange";
             formMessage.innerText = "You've already registered for this event!";
             return;
         }
 
-        // 3. EXECUTE SAFE INSERTION SINCE ACCOUNT UNIQUE SUBMISSION PASSES
+        // LAYER 2: INSERTION WITH EXPLICIT DATABASE CONSTRAINT CATCHING
         const { error } = await client
             .from("tournament_regi") 
             .insert([{
@@ -312,12 +307,20 @@ if (tournamentForm) {
             }]);
 
         if (error) {
-            console.error("Database Write Error:", error);
-            formMessage.style.color = "red";
-            formMessage.innerText = error.message;
+            // Check if the database error message or code references a unique key constraint violation
+            if (error.message.includes("unique constraint") || error.code === "23505") {
+                formMessage.style.color = "orange";
+                formMessage.innerText = "You've already registered for this event!";
+            } else {
+                // Keep standard reporting for any other random network/DB issues
+                console.error("Database Write Error:", error);
+                formMessage.style.color = "red";
+                formMessage.innerText = error.message;
+            }
             return;
         }
 
+        // SUCCESSFUL WRITE
         formMessage.style.color = "green";
         formMessage.innerText = "Registration tracking posted successfully! 🎾";
         tournamentForm.reset();
