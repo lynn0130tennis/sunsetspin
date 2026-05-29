@@ -229,7 +229,6 @@ async function updateUI() {
         // FAIL-SAFE USERNAME RESOLUTION SEQUENCE
         let displayUsername = session.user.user_metadata?.username;
 
-        // Fallback Layer 1: Query database mapping if metadata context is blank
         if (!displayUsername) {
             const { data: profile } = await client
                 .from("Registration")
@@ -242,12 +241,11 @@ async function updateUI() {
             }
         }
 
-        // Fallback Layer 2: Default to cleanly splitting the login email address prefix
         if (!displayUsername) {
             displayUsername = session.user.email.split("@")[0];
         }
 
-        // Apply string safely to text node anchors if they exist on current page
+        // Apply string safely to text node anchors if they exist on the current page
         if (userStatus) userStatus.textContent = displayUsername; 
         if (regUsernameField) regUsernameField.value = displayUsername;
 
@@ -257,12 +255,8 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "block";
         if (loginMessage) loginMessage.style.display = "none";
 
-        // Safeguard: Wait completely for the DOM tree structure to compile before running the rendering block
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => loadRegisteredEvents(displayUsername));
-        } else {
-            loadRegisteredEvents(displayUsername);
-        }
+        // Call the data loader with the resolved username
+        loadRegisteredEvents(displayUsername);
 
     } else {
         if (userStatus) userStatus.textContent = "";
@@ -277,7 +271,7 @@ async function updateUI() {
 }
 
 // --------------------
-// TOURNAMENT FORM DISPATCH LOGIC (WITH REINFORCED DUPLICATE INTERCEPTION)
+// TOURNAMENT FORM DISPATCH LOGIC
 // --------------------
 const tournamentForm = document.getElementById("tournament-form");
 const formMessage = document.getElementById("form-message");
@@ -304,8 +298,7 @@ if (tournamentForm) {
             return;
         }
 
-        // LAYER 1: PROACTIVE DUPLICATE VERIFICATION QUERY
-        const { data: existingReg, error: checkError } = await client
+        const { data: existingReg } = await client
             .from("tournament_regi")
             .select("id")
             .eq("username", username)
@@ -318,7 +311,6 @@ if (tournamentForm) {
             return;
         }
 
-        // LAYER 2: INSERTION WITH EXPLICIT DATABASE CONSTRAINT CATCHING
         const { error } = await client
             .from("tournament_regi") 
             .insert([{
@@ -352,18 +344,16 @@ if (tournamentForm) {
 }
 
 // --------------------
-// PROFILE DASHBOARD DATA RENDERER (ALIGNED TO LAYOUT SCHEMAS)
+// PROFILE DASHBOARD DATA RENDERER
 // --------------------
 async function loadRegisteredEvents(username) {
-    // If the element ID is container-upcoming-events on profile.html, pull it accurately
-    const container = document.getElementById("container-upcoming-events") || document.getElementById("Your Registered Upcoming Events");
     const dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     const noEventsRow = document.getElementById("no-events-row");
 
-    // Exit cleanly if we are on an index/home layout page without a dashboard block
+    // Guard clause: stop execution if this target area is not available on the current page
     if (!dynamicWrapper) return;
 
-    // Set initial loading structural state
+    // Show processing row
     dynamicWrapper.innerHTML = `
         <div class="tournament-status-row" id="loading-events-row">
             <div class="t-info-meta">
@@ -375,16 +365,13 @@ async function loadRegisteredEvents(username) {
     `;
     if (noEventsRow) noEventsRow.style.display = "none";
 
-    // Clean up username string to ensure query safety
     const cleanUsername = username.trim();
 
-    // Query database table records
     const { data: registrations, error } = await client
         .from("tournament_regi")
         .select("tournament_code, division, compete_level")
         .eq("username", cleanUsername);
 
-    // Clear loading row placeholder
     dynamicWrapper.innerHTML = "";
 
     if (error) {
@@ -400,13 +387,11 @@ async function loadRegisteredEvents(username) {
         return;
     }
 
-    // Fallback if records are completely clean
     if (!registrations || registrations.length === 0) {
         if (noEventsRow) noEventsRow.style.display = "flex";
         return;
     }
 
-    // Append table items to wrapper area
     registrations.forEach(event => {
         const row = document.createElement("div");
         row.className = "tournament-status-row";
@@ -429,10 +414,10 @@ function escapeHTML(str) {
 }
 
 // --------------------
-// APPLICATION LIFE CYCLE LISTENERS
+// APPLICATION INITIALIZATION LIFECYCLE
 // --------------------
-// Run baseline checks on execution entry
-updateUI();
-
-// Subscribe to real-time session modifications
-client.auth.onAuthStateChange(() => { updateUI(); });
+// Force execution to wait for EVERYTHING in the layout to complete rendering
+window.onload = () => {
+    updateUI();
+    client.auth.onAuthStateChange(() => { updateUI(); });
+};
