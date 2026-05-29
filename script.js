@@ -336,24 +336,18 @@ if (tournamentForm) {
 }
 
 // --------------------
-// PROFILE DASHBOARD DATA RENDERER (OMNI-TARGET EDITION)
+// PROFILE DASHBOARD DATA RENDERER (OMNI-SEARCH EDITION)
 // --------------------
 async function loadRegisteredEvents(username) {
-    // Look for our specific wrapper, or find the main header and target its parent card directly
     let dynamicWrapper = document.getElementById("dynamic-events-wrapper");
     
     if (!dynamicWrapper) {
         const sections = document.querySelectorAll("section, .dashboard-section-card");
         for (let section of sections) {
             if (section.textContent.includes("Your Registered Upcoming Events")) {
-                // Look for an existing paragraph or container to replace inside this card
                 let contentBox = section.querySelector(".tournament-list-container") || section;
-                
-                // Create our dynamic wrapper injection hub on the fly
                 dynamicWrapper = document.createElement("div");
                 dynamicWrapper.id = "dynamic-events-wrapper";
-                
-                // Clear the static placeholder text and insert our hub
                 contentBox.innerHTML = "";
                 contentBox.appendChild(dynamicWrapper);
                 break;
@@ -361,57 +355,62 @@ async function loadRegisteredEvents(username) {
         }
     }
 
-    // Guard escape if page doesn't contain this feature component
     if (!dynamicWrapper) return;
-
-    dynamicWrapper.innerHTML = `
-        <div class="tournament-status-row" style="padding: 10px 0; color: #666;">
-            <p>🔄 Querying tournament records for <strong>${username}</strong>...</p>
-        </div>
-    `;
 
     try {
         const cleanUsername = username.trim();
+        const sessionResponse = await client.auth.getSession();
+        const currentEmail = sessionResponse.data?.session?.user?.email;
 
-        const { data: registrations, error } = await client
+        // STEP 1: Main Lookup by Username (e.g., lynn0130)
+        let { data: registrations, error } = await client
             .from("tournament_regi")
             .select("tournament_code, division, compete_level")
             .eq("username", cleanUsername);
 
         if (error) {
-            console.error("Database retrieve error:", error);
-            dynamicWrapper.innerHTML = `<p style="color:red;">Error loading brackets: ${error.message}</p>`;
+            console.error("Database query failed:", error);
             return;
         }
 
-        dynamicWrapper.innerHTML = "";
-
-        if (!registrations || registrations.length === 0) {
-            // Backup validation check: Look up data via your linked profile email
-            const sessionResponse = await client.auth.getSession();
-            const currentEmail = sessionResponse.data?.session?.user?.email;
-
-            if (currentEmail) {
-                const { data: emailRegs } = await client
-                    .from("tournament_regi")
-                    .select("tournament_code, division, compete_level")
-                    .eq("username", currentEmail);
-
-                if (emailRegs && emailRegs.length > 0) {
-                    renderRows(emailRegs, dynamicWrapper);
-                    return;
-                }
+        // STEP 2: Fallback Lookup by Email if Username returns 0 rows
+        if ((!registrations || registrations.length === 0) && currentEmail) {
+            console.log("Omni-Search: No matches for username. Checking email fallback...");
+            const { data: emailRegs } = await client
+                .from("tournament_regi")
+                .select("tournament_code, division, compete_level")
+                .eq("username", currentEmail.trim());
+            
+            if (emailRegs && emailRegs.length > 0) {
+                registrations = emailRegs;
             }
+        }
 
-            dynamicWrapper.innerHTML = `
-                <p style="color: #888; font-style: italic; padding: 10px 0;">
-                    You are not currently registered for any upcoming match frameworks.
-                </p>
-            `;
+        // STEP 3: Wildcard Fuzzy Lookup if precise fields came up empty
+        if (!registrations || registrations.length === 0) {
+            console.log("Omni-Search: Running dynamic partial match logic...");
+            const { data: fuzzyRegs } = await client
+                .from("tournament_regi")
+                .select("tournament_code, division, compete_level")
+                .ilike("username", `%${cleanUsername}%`);
+
+            if (fuzzyRegs && fuzzyRegs.length > 0) {
+                registrations = fuzzyRegs;
+            }
+        }
+
+        // STEP 4: Render rows if data was caught in any layer
+        if (registrations && registrations.length > 0) {
+            renderRows(registrations, dynamicWrapper);
             return;
         }
 
-        renderRows(registrations, dynamicWrapper);
+        // Final Empty State if no records exist anywhere in the table matrix
+        dynamicWrapper.innerHTML = `
+            <p style="color: #888; font-style: italic; padding: 10px 0;">
+                You are not currently registered for any upcoming match frameworks.
+            </p>
+        `;
 
     } catch (catchErr) {
         console.error("Renderer runtime exception:", catchErr);
