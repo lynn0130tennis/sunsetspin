@@ -1,34 +1,45 @@
-console.log("SCRIPT LOADED");
+console.log("LOG: Script initializing...");
 
 // --------------------
-// SUPABASE INITIALIZATION
+// CONFIGURATION DEFINITIONS
 // --------------------
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
-if (!window.supabaseClient) {
-    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-}
-const client = window.supabaseClient;
+let client = null;
 
-// Wrap EVERYTHING inside a listener that waits until HTML tags are fully built
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM FULLY PARSED - BINDING BUTTONS");
+// Wrap EVERYTHING to guarantee elements and CDN libraries are fully present
+window.addEventListener("load", () => {
+    console.log("LOG: Page resources fully loaded. Binding workflows...");
 
-    // --------------------
-    // DOM ELEMENTS
-    // --------------------
+    // 1. Safe Client Fallback Verification
+    try {
+        if (typeof supabase !== 'undefined') {
+            if (!window.supabaseClient) {
+                window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+            client = window.supabaseClient;
+            console.log("LOG: Supabase successfully initialized.");
+        } else {
+            console.error("CRITICAL ERROR: Supabase library CDN script missing from HTML head!");
+            alert("Application error: External database library failed to load.");
+            return;
+        }
+    } catch (e) {
+        console.error("Initialization exception captured: ", e);
+        return;
+    }
+
+    // 2. DOM Elements Captures
     const signinBtn = document.getElementById("signin-btn");
     const signupBtn = document.getElementById("signup-btn");
     const logoutBtn = document.getElementById("logout-btn");
-
     const userStatus = document.getElementById("user-status");
     const registrationContainer = document.getElementById("registration-form-container");
     const loginMessage = document.getElementById("login-message");
 
     const authModal = document.getElementById("auth-modal");
     const authTitle = document.getElementById("auth-title");
-
     const authUsername = document.getElementById("auth-username");
     const authEmail = document.getElementById("auth-email");
     const authPassword = document.getElementById("auth-password");
@@ -40,14 +51,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const authSubmitBtn = document.getElementById("auth-submit-btn");
     const authMessage = document.getElementById("auth-message");
     const closeModal = document.getElementById("close-modal");
-
     const regUsernameField = document.getElementById("reg-username");
     const tournamentForm = document.getElementById("tournament-form");
     const formMessage = document.getElementById("form-message");
 
     let authMode = "signin";
 
-    // US Telephone Formatting Matrix
+    // US Telephone Format Tracking Action
     if (authPhone) {
         authPhone.addEventListener("input", (e) => {
             let value = e.target.value.replace(/\D/g, "").substring(0, 10);
@@ -60,20 +70,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Modal Toggle Engine
+    // Modal Display Layout Wrapper
     function openModal(mode) {
         authMode = mode;
-        if (!authModal) {
-            console.error("Modal element (#auth-modal) not found in HTML!");
-            return;
-        }
+        if (!authModal) return;
 
-        // Force visibility override to bypass strict CSS classes
-        authModal.setProperty ? authModal.setProperty("display", "flex", "important") : authModal.style.setProperty("display", "flex", "important");
-        
+        // Uses standard block displaying fallback to retain basic styling layouts
+        authModal.style.setProperty("display", "block", "important");
         if (authMessage) authMessage.innerText = "";
 
-        // Reset fields safely
+        // Standard Form Field Resets
         if (authEmail) authEmail.value = "";
         if (authPassword) authPassword.value = "";
         if (authUsername) authUsername.value = "";
@@ -85,18 +91,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mode === "signup") {
             if (authTitle) authTitle.innerText = "Create Account";
             if (authUsername) authUsername.style.setProperty("display", "block", "important");
-            toggleAuthFields("block");
+            toggleMetadataFields("block");
         } else {
             if (authTitle) authTitle.innerText = "Sign In";
             if (authUsername) authUsername.style.setProperty("display", "block", "important"); 
-            toggleAuthFields("none"); 
+            toggleMetadataFields("none"); 
         }
     }
 
-    function toggleAuthFields(displayStyle) {
-        const fields = [authEmail, authPhone, authGender, authUsta, authWechat];
-        fields.forEach(field => {
-            if (field) field.style.setProperty("display", displayStyle, "important");
+    function toggleMetadataFields(styleString) {
+        const structuralInputs = [authEmail, authPhone, authGender, authUsta, authWechat];
+        structuralInputs.forEach(element => {
+            if (element) element.style.setProperty("display", styleString, "important");
         });
     }
 
@@ -104,26 +110,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (authModal) authModal.style.setProperty("display", "none", "important");
     }
 
-    // Event Attachments with strict preventative click tracking
+    // Direct Event Binds With Page Intercept Terminations
     if (signupBtn) {
         signupBtn.addEventListener("click", (e) => {
             e.preventDefault();
             openModal("signup");
         });
     }
+    
     if (signinBtn) {
         signinBtn.addEventListener("click", (e) => {
             e.preventDefault();
             openModal("signin");
         });
     }
+    
     if (closeModal) closeModal.addEventListener("click", closeAuthModal);
 
     window.addEventListener("click", (e) => {
         if (e.target === authModal) closeAuthModal();
     });
 
-    // Authentication Submissions
+    // Authentication Submission Operations
     if (authSubmitBtn) {
         authSubmitBtn.addEventListener("click", async (e) => {
             e.preventDefault();
@@ -175,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     }]);
 
                 if (insertError) {
-                    authMessage.innerText = `Auth complete, profile save failed: ${insertError.message}`;
+                    authMessage.innerText = `Profile storage connection error: ${insertError.message}`;
                     return;
                 }
 
@@ -262,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Tournament Form Processing
+    // Tournament Sign Up Registration Submissions
     if (tournamentForm) {
         tournamentForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -271,26 +279,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 formMessage.style.color = "red";
             }
 
-            const { data: { session } } = await client.auth.getSession();
-            if (!session) {
-                if (formMessage) formMessage.innerText = "Error: You must be logged in.";
-                return;
-            }
-
             const selectedTournament = document.getElementById("tournament")?.value;
             const selectedDivision = document.getElementById("division")?.value;
             const selectedLevel = document.getElementById("level")?.value;
             const currentUsername = regUsernameField ? regUsernameField.value : "";
 
             if (!selectedTournament || !selectedDivision || !selectedLevel) {
-                if (formMessage) formMessage.innerText = "Please completely fill out all options.";
+                if (formMessage) formMessage.innerText = "Please select options for all structural fields.";
                 return;
             }
 
             const { error: registrationError } = await client
                 .from("TournamentSignups")
                 .insert([{
-                    user_id: session.user.id,
+                    user_id: (await client.auth.getSession()).data.session?.user?.id || null,
                     username: currentUsername,
                     tournament_id: selectedTournament,
                     division: selectedDivision,
@@ -314,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Initial load configurations
+    // Core Dynamic Listener Running Sequences
     updateUI();
     client.auth.onAuthStateChange(() => { updateUI(); });
 });
