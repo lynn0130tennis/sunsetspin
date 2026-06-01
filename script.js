@@ -1,36 +1,33 @@
-console.log("LOG: Script initializing...");
+console.log("SCRIPT LAUNCHED");
 
 // --------------------
-// CONFIGURATION DEFINITIONS
+// SUPABASE INITIALIZATION
 // --------------------
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
 let client = null;
 
-// Wrap EVERYTHING to guarantee elements and CDN libraries are fully present
-window.addEventListener("load", () => {
-    console.log("LOG: Page resources fully loaded. Binding workflows...");
-
-    // 1. Safe Client Fallback Verification
-    try {
-        if (typeof supabase !== 'undefined') {
-            if (!window.supabaseClient) {
-                window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            }
-            client = window.supabaseClient;
-            console.log("LOG: Supabase successfully initialized.");
-        } else {
-            console.error("CRITICAL ERROR: Supabase library CDN script missing from HTML head!");
-            alert("Application error: External database library failed to load.");
-            return;
-        }
-    } catch (e) {
-        console.error("Initialization exception captured: ", e);
-        return;
+// Initialize Supabase defensively inside a safety block
+try {
+    if (typeof supabase !== 'undefined') {
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        client = window.supabaseClient;
+        console.log("Supabase connected successfully.");
+    } else {
+        console.error("Supabase script CDN tag is missing from your HTML file.");
     }
+} catch (err) {
+    console.error("Supabase initialization failed, running in offline mode:", err);
+}
 
-    // 2. DOM Elements Captures
+// Wait for all HTML tags to be completely ready before binding listeners
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM ready. Attaching button events...");
+
+    // --------------------
+    // DOM ELEMENTS
+    // --------------------
     const signinBtn = document.getElementById("signin-btn");
     const signupBtn = document.getElementById("signup-btn");
     const logoutBtn = document.getElementById("logout-btn");
@@ -40,24 +37,28 @@ window.addEventListener("load", () => {
 
     const authModal = document.getElementById("auth-modal");
     const authTitle = document.getElementById("auth-title");
+    const authSubmitBtn = document.getElementById("auth-submit-btn");
+    const closeModal = document.getElementById("close-modal");
+    const authMessage = document.getElementById("auth-message");
+
+    // Form fields
     const authUsername = document.getElementById("auth-username");
     const authEmail = document.getElementById("auth-email");
     const authPassword = document.getElementById("auth-password");
     const authPhone = document.getElementById("auth-phone");
     const authGender = document.getElementById("auth-gender");
     const authUsta = document.getElementById("auth-usta");
-    const authWechat = document.getElementById("auth-wechat"); 
+    const authWechat = document.getElementById("auth-wechat");
 
-    const authSubmitBtn = document.getElementById("auth-submit-btn");
-    const authMessage = document.getElementById("auth-message");
-    const closeModal = document.getElementById("close-modal");
     const regUsernameField = document.getElementById("reg-username");
     const tournamentForm = document.getElementById("tournament-form");
     const formMessage = document.getElementById("form-message");
 
     let authMode = "signin";
 
-    // US Telephone Format Tracking Action
+    // --------------------
+    // PHONE FORMATTING ENGINE
+    // --------------------
     if (authPhone) {
         authPhone.addEventListener("input", (e) => {
             let value = e.target.value.replace(/\D/g, "").substring(0, 10);
@@ -70,16 +71,21 @@ window.addEventListener("load", () => {
         });
     }
 
-    // Modal Display Layout Wrapper
+    // --------------------
+    // MODAL WINDOW TOGGLES
+    // --------------------
     function openModal(mode) {
         authMode = mode;
-        if (!authModal) return;
+        if (!authModal) {
+            console.error("Could not find the #auth-modal element in your HTML!");
+            return;
+        }
 
-        // Uses standard block displaying fallback to retain basic styling layouts
+        // Force modal overlay display configuration safely
         authModal.style.setProperty("display", "block", "important");
         if (authMessage) authMessage.innerText = "";
 
-        // Standard Form Field Resets
+        // Reset all inputs cleanly
         if (authEmail) authEmail.value = "";
         if (authPassword) authPassword.value = "";
         if (authUsername) authUsername.value = "";
@@ -90,51 +96,67 @@ window.addEventListener("load", () => {
 
         if (mode === "signup") {
             if (authTitle) authTitle.innerText = "Create Account";
+            if (authSubmitBtn) authSubmitBtn.innerText = "Sign Up";
             if (authUsername) authUsername.style.setProperty("display", "block", "important");
             toggleMetadataFields("block");
         } else {
             if (authTitle) authTitle.innerText = "Sign In";
-            if (authUsername) authUsername.style.setProperty("display", "block", "important"); 
-            toggleMetadataFields("none"); 
+            if (authSubmitBtn) authSubmitBtn.innerText = "Sign In";
+            if (authUsername) authUsername.style.setProperty("display", "block", "important"); // Kept block so they can login via username string
+            toggleMetadataFields("none");
         }
     }
 
-    function toggleMetadataFields(styleString) {
-        const structuralInputs = [authEmail, authPhone, authGender, authUsta, authWechat];
-        structuralInputs.forEach(element => {
-            if (element) element.style.setProperty("display", styleString, "important");
+    function toggleMetadataFields(displayStyle) {
+        const standardInputs = [authEmail, authPhone, authGender, authUsta, authWechat];
+        standardInputs.forEach(element => {
+            if (element) element.style.setProperty("display", displayStyle, "important");
         });
     }
 
-    function closeAuthModal() {
+    function closeModalWindow() {
         if (authModal) authModal.style.setProperty("display", "none", "important");
     }
 
-    // Direct Event Binds With Page Intercept Terminations
-    if (signupBtn) {
-        signupBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            openModal("signup");
-        });
-    }
-    
+    // Attach Intercept Action Bindings
     if (signinBtn) {
         signinBtn.addEventListener("click", (e) => {
             e.preventDefault();
             openModal("signin");
         });
     }
-    
-    if (closeModal) closeModal.addEventListener("click", closeAuthModal);
+
+    if (signupBtn) {
+        signupBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal("signup");
+        });
+    }
+
+    if (closeModal) {
+        closeModal.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeModalWindow();
+        });
+    }
 
     window.addEventListener("click", (e) => {
-        if (e.target === authModal) closeAuthModal();
+        if (e.target === authModal) {
+            closeModalWindow();
+        }
     });
 
-    // Authentication Submission Operations
+    // --------------------
+    // AUTHENTICATION OPERATIONS
+    // --------------------
     if (authSubmitBtn) {
         authSubmitBtn.addEventListener("click", async (e) => {
             e.preventDefault();
+            if (!client) {
+                alert("Database connection offline. Action unavailable.");
+                return;
+            }
+            
             if (!authMessage) return;
             authMessage.innerText = "";
             authMessage.style.color = "red";
@@ -143,11 +165,12 @@ window.addEventListener("load", () => {
             const password = authPassword ? authPassword.value.trim() : "";
 
             if (!username || !password) {
-                authMessage.innerText = "Please fill in your username and password.";
+                authMessage.innerText = "Please fill out both username and password fields.";
                 return;
             }
 
             if (authMode === "signup") {
+                // --- HANDLE SIGN UP ---
                 const email = authEmail ? authEmail.value.trim() : "";
                 const phone = authPhone ? authPhone.value.trim() : "";
                 const gender = authGender?.value || null;
@@ -155,10 +178,11 @@ window.addEventListener("load", () => {
                 const wechat = authWechat?.value.trim() || null; 
 
                 if (!email || !phone) {
-                    authMessage.innerText = "Please complete all account fields.";
+                    authMessage.innerText = "Please complete all account signup options.";
                     return;
                 }
 
+                // 1. Create account auth entry
                 const { data, error } = await client.auth.signUp({
                     email,
                     password,
@@ -170,6 +194,7 @@ window.addEventListener("load", () => {
                     return;
                 }
 
+                // 2. Map custom metadata into your Registration table profile row
                 const { error: insertError } = await client
                     .from("Registration")
                     .insert([{
@@ -183,15 +208,17 @@ window.addEventListener("load", () => {
                     }]);
 
                 if (insertError) {
-                    authMessage.innerText = `Profile storage connection error: ${insertError.message}`;
+                    authMessage.innerText = `Auth clear, profile save error: ${insertError.message}`;
                     return;
                 }
 
                 authMessage.style.color = "green";
                 authMessage.innerText = "Account created successfully! 🎾";
-                setTimeout(closeAuthModal, 1000);
+                setTimeout(closeModalWindow, 1000);
 
             } else {
+                // --- HANDLE SIGN IN ---
+                // Resolve user profile row matching the inputted custom username string
                 const { data: profileRow, error: profileErr } = await client
                     .from("Registration")
                     .select("email")
@@ -215,7 +242,7 @@ window.addEventListener("load", () => {
 
                 authMessage.style.color = "green";
                 authMessage.innerText = "Welcome back!";
-                setTimeout(closeAuthModal, 600);
+                setTimeout(closeModalWindow, 600);
             }
         });
     }
@@ -227,6 +254,9 @@ window.addEventListener("load", () => {
         });
     }
 
+    // --------------------
+    // INTERFACE RENDER COUPLING
+    // --------------------
     async function updateUI() {
         const { data: { session } } = await client.auth.getSession();
 
@@ -270,7 +300,9 @@ window.addEventListener("load", () => {
         }
     }
 
-    // Tournament Sign Up Registration Submissions
+    // --------------------
+    // TOURNAMENT REGISTRATION PROCESSOR
+    // --------------------
     if (tournamentForm) {
         tournamentForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -279,20 +311,27 @@ window.addEventListener("load", () => {
                 formMessage.style.color = "red";
             }
 
+            const { data: { session } } = await client.auth.getSession();
+            if (!session) {
+                if (formMessage) formMessage.innerText = "Error: You must be logged in.";
+                return;
+            }
+
             const selectedTournament = document.getElementById("tournament")?.value;
             const selectedDivision = document.getElementById("division")?.value;
             const selectedLevel = document.getElementById("level")?.value;
             const currentUsername = regUsernameField ? regUsernameField.value : "";
 
             if (!selectedTournament || !selectedDivision || !selectedLevel) {
-                if (formMessage) formMessage.innerText = "Please select options for all structural fields.";
+                if (formMessage) formMessage.innerText = "Please select options for all tournament setup fields.";
                 return;
             }
 
+            // Write registration records directly into your Supabase database table
             const { error: registrationError } = await client
                 .from("TournamentSignups")
                 .insert([{
-                    user_id: (await client.auth.getSession()).data.session?.user?.id || null,
+                    user_id: session.user.id,
                     username: currentUsername,
                     tournament_id: selectedTournament,
                     division: selectedDivision,
@@ -310,13 +349,16 @@ window.addEventListener("load", () => {
                 formMessage.innerText = "🎉 Successfully registered for the tournament!";
             }
             
+            // Clean up option selectors for next registration entry
             document.getElementById("tournament").value = "";
             document.getElementById("division").value = "";
             document.getElementById("level").value = "";
         });
     }
 
-    // Core Dynamic Listener Running Sequences
+    // Run synchronization tasks on load and state changes
     updateUI();
-    client.auth.onAuthStateChange(() => { updateUI(); });
+    if (client) {
+        client.auth.onAuthStateChange(() => { updateUI(); });
+    }
 });
