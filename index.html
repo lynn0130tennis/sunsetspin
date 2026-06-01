@@ -1,272 +1,102 @@
-// ==========================================
-// 1. SUPABASE INITIALIZATION
-// ==========================================
-const SUPABASE_URL = "https://your-supabase-project.supabase.co"; // Replace with your URL
-const SUPABASE_ANON_KEY = "your-actual-anon-key-here";           // Replace with your Anon Key
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunset Spin Invitational - Tennis Tournament Registration</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<body>
 
-// ==========================================
-// 2. DOM ELEMENTS SELECTORS
-// ==========================================
-// Auth Buttons & Status
-const signInBtn = document.getElementById('signin-btn');
-const signUpBtn = document.getElementById('signup-btn');
-const logoutBtn = document.getElementById('logout-btn');
-const profileLink = document.getElementById('profile-link');
-const userStatus = document.getElementById('user-status');
+<header class="header">
+    <div class="container">
+        <div class="logo">
+            <h1>🎾 Sunset Spin Invitational</h1>
+            <p class="tagline">Tennis Tournament & Events</p>
+        </div>
 
-// Auth Modal Elements
-const authModal = document.getElementById('auth-modal');
-const closeModal = document.getElementById('close-modal');
-const authTitle = document.getElementById('auth-title');
-const authSubmitBtn = document.getElementById('auth-submit-btn');
-const authMessage = document.getElementById('auth-message');
+        <nav class="nav">
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#tournaments">Tournaments</a></li>
+                <li><a href="#register">Register</a></li>
+                <li id="user-status-container">
+                    <a href="profile.html" id="user-status" style="text-decoration: none; font-weight: bold; color: inherit;"></a>
+                </li>
+                <li><a href="profile.html" id="profile-link" style="display:none;">Account Settings</a></li>
+                <li><a href="#" id="signin-btn">Sign In</a></li>
+                <li><a href="#" id="signup-btn">Sign Up</a></li>
+                <li><a href="#" id="logout-btn" style="display:none;">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
-// Auth Form Fields
-const authUsername = document.getElementById('auth-username');
-const authPassword = document.getElementById('auth-password');
-const authEmail = document.getElementById('auth-email');
-const authPhone = document.getElementById('auth-phone');
-const authGender = document.getElementById('auth-gender');
-const authUsta = document.getElementById('auth-usta');
-const authWechat = document.getElementById('auth-wechat');
+<main>
+    <section id="home" class="hero">
+        <div class="container">
+            <h2>Welcome to Sunset Spin Invitational</h2>
+            <p>Where Competition Meets Golden Hour</p>
+            <a href="#register" class="cta-button">Register Today</a>
+        </div>
+    </section>
 
-// Registration UI & Form
-const loginMessage = document.getElementById('login-message');
-const regFormContainer = document.getElementById('registration-form-container');
-const tournamentForm = document.getElementById('tournament-form');
-const regUsernameField = document.getElementById('reg-username');
-const formMessage = document.getElementById('form-message');
+    <section id="about" class="about">
+        <div class="container">
+            <h2>About Sunset Spin Invitational</h2>
+            <div class="about-content">
+                <p>Sunset Spin Invitational is an organization dedicated to promoting competitive tennis in Miami.</p>
+                <p>Our vision is to elevate competitive tennis by hosting structured tournaments and events that bring players together to compete at a higher level, develop their game, and strengthen the local tennis community.</p>
+            </div>
+        </div>
+    </section>
 
-let currentModalMode = 'signin'; // Tracks 'signin' vs 'signup'
-let currentUser = null;
+    <section id="tournaments" class="tournaments">
+        <div class="container">
+            <h2>🎾 Upcoming Events</h2>
+            <div class="tournaments-grid">
+                <div class="tournament-card">
+                    <div class="tournament-badge">Deadline: 6/10/2026</div>
+                    <h3>Sunset Spin Grand Open</h3>
+                    <p><strong>Tournament ID:</strong> SS00126</p>
+                    <p><strong>Dates:</strong> June 14, 2026</p>
+                    <p><strong>Division:</strong> Doubles</p>
+                    <p><strong>Level:</strong> 3.0+</p>
+                    <p><strong>Location:</strong> TBD: Heron Bay or UM Court</p>
+                    <p><strong>Cost:</strong> Free </p>
+                </div>
 
-// ==========================================
-// 3. AUTH STATE MANAGEMENT (The Engine)
-// ==========================================
+                <div class="tournament-card">
+                    <div class="tournament-badge">Deadline: 6/20/2026</div>
+                    <h3>Summer South Miami Singles</h3>
+                    <p><strong>Tournament ID:</strong> SS00226</p>
+                    <p><strong>Dates:</strong> June 30 – Aug 31, 2026</p>
+                    <p><strong>Division:</strong> Singles</p>
+                    <p><strong>Level:</strong> All Levels</p>
+                    <p><strong>Location:</strong> UM Courts</p>
+                    <p><strong>Cost:</strong> Free </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-// Listen for login/logout events automatically
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (session && session.user) {
-        currentUser = session.user;
-        
-        // Fetch custom username/profile info from your Supabase 'profiles' table
-        const username = await fetchUserProfile(currentUser.id);
-        
-        // UI updates for Logged In state
-        userStatus.textContent = `👋 ${username || currentUser.email}`;
-        profileLink.style.display = 'inline-block';
-        logoutBtn.style.display = 'inline-block';
-        signInBtn.style.display = 'none';
-        signUpBtn.style.display = 'none';
-        
-        // Reveal the registration form and autofill username
-        loginMessage.style.display = 'none';
-        regFormContainer.style.display = 'block';
-        regUsernameField.value = username || currentUser.email;
-    } else {
-        currentUser = null;
-        
-        // UI updates for Logged Out state
-        userStatus.textContent = '';
-        profileLink.style.display = 'none';
-        logoutBtn.style.display = 'none';
-        signInBtn.style.display = 'inline-block';
-        signUpBtn.style.display = 'inline-block';
-        
-        // Hide registration form, show login notice
-        loginMessage.style.display = 'block';
-        regFormContainer.style.display = 'none';
-        regUsernameField.value = '';
-    }
-});
+    <section id="register" class="registration">
+        <div class="container">
+            <h2>Tournament Registration</h2>
 
-// Helper function to get custom profile data
-async function fetchUserProfile(userId) {
-    try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', userId)
-            .single();
-        
-        if (error) throw error;
-        return data ? data.username : null;
-    } catch (err) {
-        console.error("Error fetching profile:", err.message);
-        return null;
-    }
-}
+            <div id="login-message" style="text-align:center; padding:20px;">
+                Please sign in to register for tournaments.
+            </div>
 
-// ==========================================
-// 4. MODAL INTERACTION LOGIC
-// ==========================================
+            <div id="registration-form-container" style="display:none;">
+                <div class="form-card">
+                    <h2>🎾 Tournament Registration</h2>
+                    <p class="subtext">Join Sunset Spin Invitational</p>
 
-function openModal(mode) {
-    currentModalMode = mode;
-    authMessage.textContent = '';
-    authModal.style.display = 'flex';
-    authModal.setAttribute('aria-hidden', 'false');
-
-    if (mode === 'signin') {
-        authTitle.textContent = 'Sign In';
-        authSubmitBtn.textContent = 'Sign In';
-        // Hide fields not needed for standard email/password login
-        authUsername.style.display = 'none';
-        authPhone.style.display = 'none';
-        authGender.style.display = 'none';
-        authUsta.style.display = 'none';
-        authWechat.style.display = 'none';
-    } else {
-        authTitle.textContent = 'Sign Up';
-        authSubmitBtn.textContent = 'Create Account';
-        // Show all signup metadata fields
-        authUsername.style.display = 'block';
-        authPhone.style.display = 'block';
-        authGender.style.display = 'block';
-        authUsta.style.display = 'block';
-        authWechat.style.display = 'block';
-    }
-}
-
-function closeModalWindow() {
-    authModal.style.display = 'none';
-    authModal.setAttribute('aria-hidden', 'true');
-}
-
-// Event Listeners for Modal
-signInBtn.addEventListener('click', (e) => { e.preventDefault(); openModal('signin'); });
-signUpBtn.addEventListener('click', (e) => { e.preventDefault(); openModal('signup'); });
-closeModal.addEventListener('click', closeModalWindow);
-window.addEventListener('click', (e) => { if (e.target === authModal) closeModalWindow(); });
-
-// Logout Action
-logoutBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error("Logout Error:", error.message);
-});
-
-// ==========================================
-// 5. SIGN IN / SIGN UP SUBMISSION
-// ==========================================
-
-authSubmitBtn.addEventListener('click', async () => {
-    const email = authEmail.value.trim();
-    const password = authPassword.value;
-
-    if (!email || !password) {
-        authMessage.style.color = 'red';
-        authMessage.textContent = 'Please enter both email and password.';
-        return;
-    }
-
-    if (currentModalMode === 'signin') {
-        // --- HANDLE SIGN IN ---
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            authMessage.style.color = 'red';
-            authMessage.textContent = error.message;
-        } else {
-            closeModalWindow();
-        }
-    } else {
-        // --- HANDLE SIGN UP ---
-        const username = authUsername.value.trim();
-        if (!username) {
-            authMessage.style.color = 'red';
-            authMessage.textContent = 'Username is required for Sign Up.';
-            return;
-        }
-
-        // 1. Create the user authentication account
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        
-        if (error) {
-            authMessage.style.color = 'red';
-            authMessage.textContent = error.message;
-            return;
-        }
-
-        if (data.user) {
-            // 2. Insert extra user metadata into your custom 'profiles' table
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert([{
-                    id: data.user.id,
-                    username: username,
-                    phone: authPhone.value.trim(),
-                    gender: authGender.value,
-                    usta_rating: authUsta.value,
-                    wechat: authWechat.value.trim()
-                }]);
-
-            if (profileError) {
-                authMessage.style.color = 'red';
-                authMessage.textContent = `Account created, but profile setup failed: ${profileError.message}`;
-            } else {
-                authMessage.style.color = 'green';
-                authMessage.textContent = 'Registration successful! Check your email for confirmation (if enabled).';
-                setTimeout(closeModalWindow, 2000);
-            }
-        }
-    }
-});
-
-// ==========================================
-// 6. TOURNAMENT REGISTRATION (The Fix)
-// ==========================================
-
-tournamentForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    formMessage.textContent = '';
-
-    if (!currentUser) {
-        formMessage.style.color = 'red';
-        formMessage.textContent = 'Error: You must be signed in to register.';
-        return;
-    }
-
-    // Capture explicit element option selections
-    const tournamentId = document.getElementById('tournament').value;
-    const division = document.getElementById('division').value;
-    const level = document.getElementById('level').value;
-
-    // Client-side validation fallback
-    if (!tournamentId || !division || !level) {
-        formMessage.style.color = 'red';
-        formMessage.textContent = 'Please completely fill out all options.';
-        return;
-    }
-
-    try {
-        // Target your tournament registration table (e.g., 'registrations')
-        const { data, error } = await supabase
-            .from('registrations')
-            .insert([
-                {
-                    user_id: currentUser.id,
-                    username: regUsernameField.value,
-                    tournament_id: tournamentId,
-                    division: division,
-                    playing_level: level,
-                    registered_at: new Date().toISOString()
-                }
-            ]);
-
-        if (error) throw error;
-
-        // Success Feedback
-        formMessage.style.color = 'green';
-        formMessage.textContent = `🎉 Successfully registered for Tournament ${tournamentId}!`;
-        tournamentForm.reset();
-        
-        // Keep the username filled back in since they are still logged in
-        regUsernameField.value = await fetchUserProfile(currentUser.id) || currentUser.email;
-
-    } catch (err) {
-        formMessage.style.color = 'red';
-        formMessage.textContent = `Registration Failed: ${err.message}`;
-    }
-});
+                    <form id="tournament-form">
+                        <div class="row">
+                            <input type="text" id="reg-username" readonly>
+                            <label for="reg-username">Username</label
