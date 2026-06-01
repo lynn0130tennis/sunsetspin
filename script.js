@@ -330,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const { error: registrationError } = await client
                 .from("tournament_regi")
                 .insert([{
-                    user_id: session.user.id,
                     username: currentUsername,
                     tournament_code: selectedTournament,
                     division: selectedDivision,
