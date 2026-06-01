@@ -8,7 +8,6 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 let client = null;
 
-// Initialize Supabase defensively inside a safety block
 try {
     if (typeof supabase !== 'undefined') {
         window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -21,7 +20,6 @@ try {
     console.error("Supabase initialization failed, running in offline mode:", err);
 }
 
-// Wait for all HTML tags to be completely ready before binding listeners
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM ready. Attaching button events...");
 
@@ -41,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModal = document.getElementById("close-modal");
     const authMessage = document.getElementById("auth-message");
 
-    // Form fields
     const authUsername = document.getElementById("auth-username");
     const authEmail = document.getElementById("auth-email");
     const authPassword = document.getElementById("auth-password");
@@ -76,16 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // --------------------
     function openModal(mode) {
         authMode = mode;
-        if (!authModal) {
-            console.error("Could not find the #auth-modal element in your HTML!");
-            return;
-        }
+        if (!authModal) return;
 
-        // Force modal overlay display configuration safely
         authModal.style.setProperty("display", "flex", "important");
         if (authMessage) authMessage.innerText = "";
 
-        // Reset all inputs cleanly
         if (authEmail) authEmail.value = "";
         if (authPassword) authPassword.value = "";
         if (authUsername) authUsername.value = "";
@@ -118,32 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (authModal) authModal.style.setProperty("display", "none", "important");
     }
 
-    // Attach Intercept Action Bindings
-    if (signinBtn) {
-        signinBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            openModal("signin");
-        });
-    }
-
-    if (signupBtn) {
-        signupBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            openModal("signup");
-        });
-    }
-
-    if (closeModal) {
-        closeModal.addEventListener("click", (e) => {
-            e.preventDefault();
-            closeModalWindow();
-        });
-    }
+    if (signinBtn) signinBtn.addEventListener("click", (e) => { e.preventDefault(); openModal("signin"); });
+    if (signupBtn) signupBtn.addEventListener("click", (e) => { e.preventDefault(); openModal("signup"); });
+    if (closeModal) closeModal.addEventListener("click", (e) => { e.preventDefault(); closeModalWindow(); });
 
     window.addEventListener("click", (e) => {
-        if (e.target === authModal) {
-            closeModalWindow();
-        }
+        if (e.target === authModal) closeModalWindow();
     });
 
     // --------------------
@@ -152,10 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (authSubmitBtn) {
         authSubmitBtn.addEventListener("click", async (e) => {
             e.preventDefault();
-            if (!client) {
-                alert("Database connection offline. Action unavailable.");
-                return;
-            }
+            if (!client) return;
             
             if (!authMessage) return;
             authMessage.innerText = "";
@@ -170,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (authMode === "signup") {
-                // --- HANDLE SIGN UP ---
                 const email = authEmail ? authEmail.value.trim() : "";
                 const phone = authPhone ? authPhone.value.trim() : "";
                 const gender = authGender?.value || null;
@@ -182,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                // 1. Create account auth entry
                 const { data, error } = await client.auth.signUp({
                     email,
                     password,
@@ -194,7 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
 
-                // 2. Map custom metadata into your Registration table profile row
                 const { error: insertError } = await client
                     .from("Registration")
                     .insert([{
@@ -217,7 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(closeModalWindow, 1000);
 
             } else {
-                // --- HANDLE SIGN IN ---
                 const { data: profileRow, error: profileErr } = await client
                     .from("Registration")
                     .select("email")
@@ -316,29 +281,62 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const selectedTournament = document.getElementById("tournament")?.value;
+            const selectedTournamentCode = document.getElementById("tournament")?.value;
             const selectedDivision = document.getElementById("division")?.value;
             const selectedLevel = document.getElementById("level")?.value;
             const currentUsername = regUsernameField ? regUsernameField.value : "";
 
-            if (!selectedTournament || !selectedDivision || !selectedLevel) {
+            if (!selectedTournamentCode || !selectedDivision || !selectedLevel || !currentUsername) {
                 if (formMessage) formMessage.innerText = "Please select options for all tournament setup fields.";
                 return;
             }
 
-            // TARGET UPDATED TABLE: 'tournament_regi'
+            if (formMessage) {
+                formMessage.style.color = "orange";
+                formMessage.innerText = "Checking verification status...";
+            }
+
+            // 1. DUPLICATE CHECK ENGINE: Filtered strictly on username + tournament_code
+            const { data: existingReg, error: checkError } = await client
+                .from("tournament_regi")
+                .select("id")
+                .eq("username", currentUsername)
+                .eq("tournament_code", selectedTournamentCode)
+                .maybeSingle();
+
+            if (checkError) {
+                if (formMessage) {
+                    formMessage.style.color = "red";
+                    formMessage.innerText = `Verification failed: ${checkError.message}`;
+                }
+                return;
+            }
+
+            // 2. CLEAR DUPLICATE WARNING BLOCK
+            if (existingReg) {
+                if (formMessage) {
+                    formMessage.style.color = "red";
+                    formMessage.innerText = "⚠️ You have registered for this event.";
+                }
+                return;
+            }
+
+            // 3. TARGETED TABLE INSERT DATA RECORD (No user_id passed)
             const { error: registrationError } = await client
                 .from("tournament_regi")
                 .insert([{
                     username: currentUsername,
-                    tournament_code: selectedTournament,
+                    tournament_code: selectedTournamentCode,
                     division: selectedDivision,
-                    compete_level: selectedLevel,
+                    playing_level: selectedLevel,
                     created_at: new Date().toISOString()
                 }]);
 
             if (registrationError) {
-                if (formMessage) formMessage.innerText = `Registration failed: ${registrationError.message}`;
+                if (formMessage) {
+                    formMessage.style.color = "red";
+                    formMessage.innerText = `Registration failed: ${registrationError.message}`;
+                }
                 return;
             }
 
@@ -347,14 +345,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 formMessage.innerText = "🎉 Successfully registered for the tournament!";
             }
             
-            // Clean up option selectors for next registration entry
             document.getElementById("tournament").value = "";
             document.getElementById("division").value = "";
             document.getElementById("level").value = "";
         });
     }
 
-    // Run synchronization tasks on load and state changes
     updateUI();
     if (client) {
         client.auth.onAuthStateChange(() => { updateUI(); });
