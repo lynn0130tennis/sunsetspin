@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Force modal overlay display configuration safely
-        authModal.style.setProperty("display", "block", "important");
+        authModal.style.setProperty("display", "flex", "important");
         if (authMessage) authMessage.innerText = "";
 
         // Reset all inputs cleanly
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             if (authTitle) authTitle.innerText = "Sign In";
             if (authSubmitBtn) authSubmitBtn.innerText = "Sign In";
-            if (authUsername) authUsername.style.setProperty("display", "block", "important"); // Kept block so they can login via username string
+            if (authUsername) authUsername.style.setProperty("display", "block", "important"); 
             toggleMetadataFields("none");
         }
     }
@@ -218,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } else {
                 // --- HANDLE SIGN IN ---
-                // Resolve user profile row matching the inputted custom username string
                 const { data: profileRow, error: profileErr } = await client
                     .from("Registration")
                     .select("email")
@@ -327,9 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Write registration records directly into your Supabase database table
+            // TARGET UPDATED TABLE: 'tournament_regi'
             const { error: registrationError } = await client
-                .from("TournamentSignups")
+                .from("tournament_regi")
                 .insert([{
                     user_id: session.user.id,
                     username: currentUsername,
