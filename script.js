@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --------------------
+  // --------------------
     // INTERFACE RENDER COUPLING
     // --------------------
     async function updateUI() {
@@ -243,7 +243,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayUsername = session.user.email.split("@")[0];
             }
 
-            if (userStatus) userStatus.textContent = displayUsername; 
+            // Populate text and restore normal linking behavior when logged in
+            if (userStatus) {
+                userStatus.textContent = displayUsername;
+                userStatus.style.removeProperty("pointer-events"); 
+                userStatus.setAttribute("href", "profile.html");
+            } 
             if (regUsernameField) regUsernameField.value = displayUsername;
 
             if (logoutBtn) logoutBtn.style.setProperty("display", "inline-block", "important");
@@ -253,7 +258,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (loginMessage) loginMessage.style.setProperty("display", "none", "important");
 
         } else {
-            if (userStatus) userStatus.textContent = "";
+            // Nullify and isolate the link when completely logged out
+            if (userStatus) {
+                userStatus.textContent = "";
+                userStatus.setAttribute("href", "#");
+                userStatus.style.setProperty("pointer-events", "none", "important");
+            }
             if (regUsernameField) regUsernameField.value = "";
 
             if (logoutBtn) logoutBtn.style.setProperty("display", "none", "important");
@@ -263,7 +273,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (loginMessage) loginMessage.style.setProperty("display", "block", "important");
         }
     }
-
     // --------------------
     // TOURNAMENT REGISTRATION PROCESSOR
     // --------------------
