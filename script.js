@@ -53,6 +53,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let authMode = "signin";
 
+    // Add CSS mouse hover actions directly to the javascript engine for the user-status badge
+    if (userStatus) {
+        userStatus.addEventListener("mouseenter", () => {
+            if (userStatus.getAttribute("href") !== "#") {
+                userStatus.style.color = "#ffb33b"; // Bright sunrise hover state
+                userStatus.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+            }
+        });
+        userStatus.addEventListener("mouseleave", () => {
+            if (userStatus.getAttribute("href") !== "#") {
+                userStatus.style.color = "#f39c12"; // Standard soft golden tone
+                userStatus.style.backgroundColor = "transparent";
+            }
+        });
+    }
+
     // --------------------
     // PHONE FORMATTING ENGINE
     // --------------------
@@ -218,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-  // --------------------
+    // --------------------
     // INTERFACE RENDER COUPLING
     // --------------------
     async function updateUI() {
@@ -228,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let displayUsername = session.user.user_metadata?.username;
 
             if (!displayUsername) {
-                const { data: profile } = await client
+                const { data: profile = null } = await client
                     .from("Registration")
                     .select("username")
                     .eq("email", session.user.email)
@@ -243,11 +259,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayUsername = session.user.email.split("@")[0];
             }
 
-            // Populate text and restore normal linking behavior when logged in
+            // Sync color profile adjustments on active session states
             if (userStatus) {
                 userStatus.textContent = displayUsername;
                 userStatus.style.removeProperty("pointer-events"); 
                 userStatus.setAttribute("href", "profile.html");
+                userStatus.style.color = "#f39c12"; // Golden Accent
             } 
             if (regUsernameField) regUsernameField.value = displayUsername;
 
@@ -258,7 +275,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (loginMessage) loginMessage.style.setProperty("display", "none", "important");
 
         } else {
-            // Nullify and isolate the link when completely logged out
             if (userStatus) {
                 userStatus.textContent = "";
                 userStatus.setAttribute("href", "#");
@@ -273,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (loginMessage) loginMessage.style.setProperty("display", "block", "important");
         }
     }
+
     // --------------------
     // TOURNAMENT REGISTRATION PROCESSOR
     // --------------------
@@ -305,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 formMessage.innerText = "Checking verification status...";
             }
 
-            // 1. DUPLICATE CHECK ENGINE: Target 'username' field to avoid table.id missing error
             const { data: existingReg, error: checkError } = await client
                 .from("tournament_regi")
                 .select("username")
@@ -321,7 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // 2. CLEAR DUPLICATE WARNING BLOCK
             if (existingReg) {
                 if (formMessage) {
                     formMessage.style.color = "red";
@@ -330,14 +345,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // 3. TARGETED TABLE INSERT DATA RECORD
             const { error: registrationError } = await client
                 .from("tournament_regi")
                 .insert([{
                     username: currentUsername,
                     tournament_code: selectedTournamentCode,
                     division: selectedDivision,
-                    compete_level: selectedLevel,
+                    playing_level: selectedLevel,
                     created_at: new Date().toISOString()
                 }]);
 
