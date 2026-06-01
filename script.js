@@ -6,7 +6,6 @@ console.log("SCRIPT LOADED");
 const SUPABASE_URL = "https://uppzqygxtpoifkaddoyi.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcHpxeWd4dHBvaWZrYWRkb3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTk5OTIsImV4cCI6MjA5NTEzNTk5Mn0.wfHlzl-msNvfWrcr3BaQYV4YVnoRXK7dq6MPV5VsKrM";
 
-// Prevent duplicate client generation if window scope already possesses an active client instance
 if (!window.supabaseClient) {
     window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
@@ -40,6 +39,10 @@ const closeModal = document.getElementById("close-modal");
 
 const regUsernameField = document.getElementById("reg-username");
 
+// Tournament Form Selectors
+const tournamentForm = document.getElementById("tournament-form");
+const formMessage = document.getElementById("form-message");
+
 let authMode = "signin";
 
 // US Telephone Formatting Matrix
@@ -60,7 +63,7 @@ function openModal(mode) {
     authMode = mode;
     if (!authModal) return;
 
-    authModal.style.display = "block";
+    authModal.style.display = "flex"; // Changed to flex for centering overlays
     if (authMessage) authMessage.innerText = "";
 
     if (authEmail) authEmail.value = "";
@@ -73,9 +76,11 @@ function openModal(mode) {
 
     if (mode === "signup") {
         if (authTitle) authTitle.innerText = "Create Account";
+        if (authUsername) authUsername.style.display = "block";
         toggleAuthFields("block");
     } else {
         if (authTitle) authTitle.innerText = "Sign In";
+        if (authUsername) authUsername.style.display = "block"; // Keep visible so user can type their login username
         toggleAuthFields("none"); 
     }
 }
@@ -113,7 +118,7 @@ if (authSubmitBtn) {
         const password = authPassword ? authPassword.value.trim() : "";
 
         if (!username || !password) {
-            authMessage.innerText = "Required login credentials missing.";
+            authMessage.innerText = "Please fill in your username and password.";
             return;
         }
 
@@ -129,6 +134,7 @@ if (authSubmitBtn) {
                 return;
             }
 
+            // 1. Register with Supabase Auth
             const { data, error } = await client.auth.signUp({
                 email,
                 password,
@@ -140,6 +146,7 @@ if (authSubmitBtn) {
                 return;
             }
 
+            // 2. Insert record into your custom 'Registration' profile directory
             const { error: insertError } = await client
                 .from("Registration")
                 .insert([{
@@ -153,7 +160,7 @@ if (authSubmitBtn) {
                 }]);
 
             if (insertError) {
-                authMessage.innerText = `Auth complete, but DB save failed: ${insertError.message}`;
+                authMessage.innerText = `Auth complete, but DB profile save failed: ${insertError.message}`;
                 return;
             }
 
@@ -162,6 +169,8 @@ if (authSubmitBtn) {
             setTimeout(closeAuthModal, 1000);
 
         } else {
+            // --- SIGN IN LOGIC ---
+            // Fetch email address linked to the provided custom username string
             const { data: profileRow, error: profileErr } = await client
                 .from("Registration")
                 .select("email")
@@ -237,6 +246,63 @@ async function updateUI() {
         if (registrationContainer) registrationContainer.style.display = "none";
         if (loginMessage) loginMessage.style.display = "block";
     }
+}
+
+// --------------------
+// TOURNAMENT REGISTRATION SYSTEM (Fixed & Added)
+// --------------------
+if (tournamentForm) {
+    tournamentForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (formMessage) {
+            formMessage.innerText = "";
+            formMessage.style.color = "red";
+        }
+
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+            if (formMessage) formMessage.innerText = "Error: You must be logged in to register.";
+            return;
+        }
+
+        const selectedTournament = document.getElementById("tournament")?.value;
+        const selectedDivision = document.getElementById("division")?.value;
+        const selectedLevel = document.getElementById("level")?.value;
+        const currentUsername = regUsernameField ? regUsernameField.value : "";
+
+        if (!selectedTournament || !selectedDivision || !selectedLevel) {
+            if (formMessage) formMessage.innerText = "Please select options for all structural fields.";
+            return;
+        }
+
+        // Saves tournament registration records to your backend database table
+        // NOTE: Ensure you have created a table in Supabase named 'TournamentSignups'
+        const { error: registrationError } = await client
+            .from("TournamentSignups")
+            .insert([{
+                user_id: session.user.id,
+                username: currentUsername,
+                tournament_id: selectedTournament,
+                division: selectedDivision,
+                playing_level: selectedLevel,
+                created_at: new Date().toISOString()
+            }]);
+
+        if (registrationError) {
+            if (formMessage) formMessage.innerText = `Registration failed: ${registrationError.message}`;
+            return;
+        }
+
+        if (formMessage) {
+            formMessage.style.color = "green";
+            formMessage.innerText = "🎉 Successfully registered for the tournament!";
+        }
+        
+        // Reset selections without wiping out your readonly username field
+        document.getElementById("tournament").value = "";
+        document.getElementById("division").value = "";
+        document.getElementById("level").value = "";
+    });
 }
 
 window.addEventListener("load", () => {
