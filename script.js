@@ -332,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .insert([{
                     user_id: session.user.id,
                     username: currentUsername,
-                    tournament_id: selectedTournament,
+                    tournament_code: selectedTournament,
                     division: selectedDivision,
                     compete_level: selectedLevel,
                     created_at: new Date().toISOString()
