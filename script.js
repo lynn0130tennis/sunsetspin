@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     username: currentUsername,
                     tournament_id: selectedTournament,
                     division: selectedDivision,
-                    playing_level: selectedLevel,
+                    compete_level: selectedLevel,
                     created_at: new Date().toISOString()
                 }]);
 
