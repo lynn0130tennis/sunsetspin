@@ -296,10 +296,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 formMessage.innerText = "Checking verification status...";
             }
 
-            // 1. DUPLICATE CHECK ENGINE: Filtered strictly on username + tournament_code
+            // 1. DUPLICATE CHECK ENGINE: Target 'username' field to avoid table.id missing error
             const { data: existingReg, error: checkError } = await client
                 .from("tournament_regi")
-                .select("id")
+                .select("username")
                 .eq("username", currentUsername)
                 .eq("tournament_code", selectedTournamentCode)
                 .maybeSingle();
@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // 3. TARGETED TABLE INSERT DATA RECORD (No user_id passed)
+            // 3. TARGETED TABLE INSERT DATA RECORD
             const { error: registrationError } = await client
                 .from("tournament_regi")
                 .insert([{
