@@ -53,18 +53,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let authMode = "signin";
 
-    // Add CSS mouse hover actions directly to the javascript engine for the user-status badge
+    // Dynamic Hover Engine for High-Visibility Capsule Button
     if (userStatus) {
         userStatus.addEventListener("mouseenter", () => {
             if (userStatus.getAttribute("href") !== "#") {
-                userStatus.style.color = "#ffb33b"; // Bright sunrise hover state
-                userStatus.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                userStatus.style.color = "#111111"; // Dark text on hover
+                userStatus.style.backgroundColor = "#ccff00"; // Solid neon background
+                userStatus.style.boxShadow = "0 0 15px rgba(204, 255, 0, 0.6)";
             }
         });
         userStatus.addEventListener("mouseleave", () => {
             if (userStatus.getAttribute("href") !== "#") {
-                userStatus.style.color = "#f39c12"; // Standard soft golden tone
-                userStatus.style.backgroundColor = "transparent";
+                userStatus.style.color = "#ccff00"; // Neon text
+                userStatus.style.backgroundColor = "transparent"; // Hollow pill
+                userStatus.style.boxShadow = "0 0 8px rgba(204, 255, 0, 0.2)";
             }
         });
     }
@@ -259,12 +261,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 displayUsername = session.user.email.split("@")[0];
             }
 
-            // Sync color profile adjustments on active session states
+            // High Visibility State Bindings on Authentication Verification Success
             if (userStatus) {
-                userStatus.textContent = displayUsername;
+                userStatus.textContent = `👤 ${displayUsername}`;
                 userStatus.style.removeProperty("pointer-events"); 
                 userStatus.setAttribute("href", "profile.html");
-                userStatus.style.color = "#f39c12"; // Golden Accent
+                userStatus.style.color = "#ccff00"; // Electric Neon Green
+                userStatus.style.borderColor = "#ccff00";
+                userStatus.style.display = "inline-block";
             } 
             if (regUsernameField) regUsernameField.value = displayUsername;
 
@@ -279,6 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 userStatus.textContent = "";
                 userStatus.setAttribute("href", "#");
                 userStatus.style.setProperty("pointer-events", "none", "important");
+                userStatus.style.display = "none";
             }
             if (regUsernameField) regUsernameField.value = "";
 
